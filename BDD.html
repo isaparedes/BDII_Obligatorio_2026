@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticketing - Control de Roles</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="barraNavegacion" id="barraNavegacion" style="display: none;">
+        <div class="logoSistema">UCU Ticket</div>
+        <div class="datosSesion">
+            <span id="textoUsuarioLogueado"></span>
+            <button onclick="cerrarSesion()" class="btnCerrarSesion">Salir</button>
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal">
+
+        <section id="pantallaAcceso" class="seccionPantalla activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Ingresar al sistema</h3>
+                <p class="subtitulo">Selecciona un rol para probar el flujo correspondiente (esto se borra despues)</p>
+            
+                <form onsubmit="simularInicioSesion(event)">
+                    <div class="grupoCampo">
+                        <label for="correoLogin">Correo Electrónico:</label>
+                        <input type="email" id="correoLogin" required placeholder="usuario@ucu.edu.uy">
+                    </div>
+
+                    <div class="grupoCampo">
+                        <label for="rolSimulado">Simular Rol de Ingreso:</label>
+                        <select id="rolSimulado">
+                            <option value="usuarioGeneral">Usuario General</option>
+                            <option value="funcionarioValidacion">Funcionario de Validación </option>
+                            <option value="administradorSede">Administrador por País Sede</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btnAccion btnBordeaux">Acceder</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="pantallaUsuarioGeneral" class="seccionPantalla">
+            <div class="pestañasInternas">
+                <button onclick="cambiarSubVista('bloqueMisEntradas')" class="btnPestaña activa" id="btnSubMisEntradas">Mis Entradas</button>
+                <button onclick="cambiarSubVista('bloqueComprar')" class="btnPestaña" id="btnSubComprar">Comprar</button>
+            </div>
+
+            <div id="bloqueMisEntradas" class="subVista activa">
+                <div class="tarjetaContenedor">
+                    <h3 class="tituloTarjeta">Mi Entrada Activa</h3>
+                    <div class="datosEntrada">
+                        <p><strong>Partido:</strong> Uruguay vs Portugal</p>
+                        <p><strong>Sector:</strong> Sector A (VIP)</p>
+                    </div>
+                    <div class="contenedorQr">
+                        <div class="recuadroQr"><span id="tokenQr">TOKEN-A1B2</span></div>
+                        <p class="textoAlerta">Cambia en: <span id="contadorTiempo">30</span>s</p>
+                    </div>
+                    <button class="btnAccion btnVerde" onclick="alert('Transferencia simulada')">Transferir Entrada</button>
+                </div>
+            </div>
+
+            <div id="bloqueComprar" class="subVista">
+                <div class="tarjetaContenedor">
+                    <h3 class="tituloTarjeta">Adquirir Boletos</h3>
+                    <form onsubmit="event.preventDefault(); alert('Compra registrada');">
+                        <div class="grupoCampo">
+                            <label>Cantidad (Máximo 5):</label>
+                            <input type="number" min="1" max="5" value="1">
+                        </div>
+                        <div class="grupoCampo">
+                            <label>Sector:</label>
+                            <select>
+                                <option>Sector A - $150</option>
+                                <option>Sector B - $90</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btnAccion btnBordeaux">Confirmar Compra</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="pantallaFuncionarioValidacion" class="seccionPantalla">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Módulo de Validación</h3>
+                <p class="subtitulo">Perfil Operativo - Control de Accesos</p>
+                
+                <div class="infoPerfil">
+                    <p><strong>Funcionario Legajo N°:</strong> <span id="legajoFuncionario">LEG-9924</span></p>
+                </div>
+
+                <div class="bloqueEscaneo">
+                    <p class="instruccion">Simular escaneo de código QR ingresando el token del usuario:</p>
+                    <input type="text" id="tokenEscaneado" placeholder="Ej: TOKEN-A1B2" class="inputEscaneo">
+                    <button onclick="simularValidacion()" class="btnAccion btnVerde">Validar e Ingresar</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="pantallaAdministradorSede" class="seccionPantalla">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Panel de Administración Geográfica</h3>
+                
+                <div class="infoPerfil">
+                    <p><strong>Jurisdicción Sede:</strong> Uruguay</p>
+                    <p><strong>Fecha de Asignación al Cargo:</strong> 15/04/2026</p>
+                </div>
+
+                <div class="bloqueGestion">
+                    <h4>Gestión de Infraestructura y Eventos</h4>
+                    <p class="subtitulo">Facultades para dar de alta estadios y eventos asignados a su zona.</p>
+                    
+                    <button class="btnAccion btnBordeaux" onclick="alert('Formulario para dar de alta un evento sin superposición de horarios')">
+                        Configurar Nuevo Evento (Partido)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Función para procesar el login simulado
+        function simularInicioSesion(event) {
+            event.preventDefault();
+            const correo = document.getElementById('correoLogin').value;
+            const rolElegido = document.getElementById('rolSimulado').value;
+
+            // Ocultar pantalla de login e indicar datos en la barra de navegación
+            document.getElementById('pantallaAcceso').classList.remove('activa');
+            document.getElementById('barraNavegacion').style.display = 'flex';
+            document.getElementById('textoUsuarioLogueado').innerText = `${correo} (${rolElegido})`;
+
+            // Redirección según el rol, cambiar luego con la BDD
+            if (rolElegido === 'usuarioGeneral') {
+                document.getElementById('pantallaUsuarioGeneral').classList.add('activa');
+                cambiarSubVista('bloqueMisEntradas');
+            } else if (rolElegido === 'funcionarioValidacion') {
+                document.getElementById('pantallaFuncionarioValidacion').classList.add('activa');
+            } else if (rolElegido === 'administradorSede') {
+                document.getElementById('pantallaAdministradorSede').classList.add('activa');
+            }
+        }
+
+        // Función para cerrar sesión y volver al login
+        function cerrarSesion() {
+            const listadoPantallas = ['pantallaUsuarioGeneral', 'pantallaFuncionarioValidacion', 'pantallaAdministradorSede'];
+            listadoPantallas.forEach(id => document.getElementById(id).classList.remove('activa'));
+            
+            document.getElementById('barraNavegacion').style.display = 'none';
+            document.getElementById('pantallaAcceso').classList.add('activa');
+            document.getElementById('correoLogin').value = '';
+        }
+
+        // Función interna para el usuario general
+        function cambiarSubVista(idBloqueDestino) {
+            document.getElementById('bloqueMisEntradas').classList.remove('activa');
+            document.getElementById('bloqueComprar').classList.remove('activa');
+            document.getElementById('btnSubMisEntradas').classList.remove('activa');
+            document.getElementById('btnSubComprar').classList.remove('activa');
+
+            document.getElementById(idBloqueDestino).classList.add('activa');
+            if(idBloqueDestino === 'bloqueMisEntradas') document.getElementById('btnSubMisEntradas').classList.add('activa');
+            if(idBloqueDestino === 'bloqueComprar') document.getElementById('btnSubComprar').classList.add('activa');
+        }
+
+        // Simular escaneo de entrada por parte del funcionario, cambiarlo luego
+        function simularValidacion() {
+            const token = document.getElementById('tokenEscaneado').value;
+            if(!token) {
+                alert('Por favor, ingresa un token para validar');
+                return;
+            }
+            alert(`Token [${token}] verificado con éxito por el Legajo LEG-9924. Entrada marcada como CONSUMIDA de forma irreversible.`);
+            document.getElementById('tokenEscaneado').value = '';
+        }
+
+        // Simulación del QR (30 segundos)
+        let segundosRestantes = 30;
+        const elementoContador = document.getElementById('contadorTiempo');
+        const elementoToken = document.getElementById('tokenQr');
+
+        setInterval(() => {
+            if (segundosRestantes <= 0) {
+                segundosRestantes = 30;
+                elementoToken.innerText = "TOKEN-" + Math.random().toString(36).substring(2,6).toUpperCase();
+            } else {
+                segundosRestantes--;
+            }
+            if (elementoContador) elementoContador.innerText = segundosRestantes;
+        }, 1000);
+    </script>
+</body>
+</html>
