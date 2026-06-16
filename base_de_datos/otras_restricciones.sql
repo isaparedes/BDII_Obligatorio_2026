@@ -1,4 +1,5 @@
 -- OTRAS RESTRICCIONES NO ESTRUCTURALES (RNE)
+USE CD_Grupo6;
 
 -- RESTRICCIONES ESTABLECIDAS EN EL MODELO CONCEPTUAL:
 
@@ -120,7 +121,7 @@ BEGIN
         SET MESSAGE_TEXT = 'El sector ha alcanzado su capacidad máxima';
     END IF;
 END // 
-DELIMITER;
+DELIMITER ;
 
 -- RNE14: no pueden ocurrir simultáneamente dos eventos en un mismo estadio.
 DELIMITER //
@@ -139,7 +140,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Ya existe un evento en ese estadio para esa fecha';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE15: un usuario_general solamente puede realizar la compra de entradas si su estado_verificación tiene el valor 'Aprobado'.
 DELIMITER //
@@ -157,7 +158,7 @@ BEGIN
         SET MESSAGE_TEXT = 'El usuario debe tener verificación aprobada para comprar';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE16: al efectuarse una compra automáticamente queda registrado como titular de cada entrada adquirida el usuario_general que realizó dicha compra.
 DELIMITER //
@@ -205,7 +206,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Una compra no puede tener más de 5 entradas asociadas';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE28: una entrada no puede estar vinculada a más de 3 registros de transferencia.
 DELIMITER //
@@ -223,7 +224,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Una entrada no puede transferirse más de 3 veces';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE30: el cambio de titular de entrada se hace efectivo solo cuando estado_transferencia toma el valor 'Aceptada'.
 DELIMITER //
@@ -258,7 +259,7 @@ BEGIN
         SET MESSAGE_TEXT = 'No se puede transferir una entrada de un evento ya ocurrido';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE39: el costo_entrada de una entrada debe ser igual al costo_sector del sector al que dicha entrada corresponde en el momento de su emisión.
 DELIMITER //
@@ -295,7 +296,7 @@ BEGIN
         SET MESSAGE_TEXT = 'No se puede transferir una entrada ya consumida';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 DELIMITER //
 -- El estado_entrada de una entrada queda automáticamente registrado como 'Consumida'.
 CREATE TRIGGER trg_consumir_entrada
@@ -310,7 +311,7 @@ BEGIN
         WHERE id_entrada = NEW.id_entrada;
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE42: el token utilizado en una validación debe ser un token con estado_token 'Activo' de una entrada al momento del escaneo; 
 -- un token con una fecha expirada (estado_token: 'Expirado') al momento del escaneo es inválido y debe ser rechazado. 
@@ -347,7 +348,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Una compra debe tener al menos una entrada asociada';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE: π id_evento(evento) - π id_evento(habilita) ≠ ∅ → ERROR
 DELIMITER //
@@ -365,8 +366,8 @@ BEGIN
         SET MESSAGE_TEXT = 'Un evento debe tener al menos un sector habilitado';
     END IF;
 END //
-DELIMITER;
-
+DELIMITER ;
+ 
 -- RNE: π id_estadio(estadio) - π id_estadio(sector) ≠ ∅ → ERROR
 DELIMITER //
 CREATE TRIGGER trg_estadio_min_un_sector
@@ -383,7 +384,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Un estadio debe tener al menos un sector';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE: π id_evento, id_estadio, nombre_sector(habilita) - π id_evento, id_estadio, nombre_sector(asignacion) ≠ ∅ → ERROR
 DELIMITER //
@@ -403,7 +404,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Un sector habilitado debe tener al menos un funcionario asignado';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;
 
 -- RNE: π id_entrada(entrada) - π id_entrada(token) ≠ ∅ → ERROR
 DELIMITER //
@@ -421,4 +422,4 @@ BEGIN
         SET MESSAGE_TEXT = 'Una entrada debe tener al menos un token asociado';
     END IF;
 END //
-DELIMITER;
+DELIMITER ;

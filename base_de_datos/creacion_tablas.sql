@@ -61,7 +61,7 @@ CREATE TABLE comision (
 -- TABLA: compra
 CREATE TABLE compra (
     id_compra INT AUTO_INCREMENT PRIMARY KEY,
-    fecha_compra DATE NOT NULL DEFAULT CURDATE(),
+    fecha_compra DATE NOT NULL,
     estado_compra VARCHAR(20) NOT NULL DEFAULT 'Pendiente',
     monto_total DECIMAL(10,2) NOT NULL DEFAULT 1,
     mail_comprador VARCHAR(255) NOT NULL,
@@ -181,7 +181,7 @@ CREATE TABLE dispositivo (
 
 -- TABLA: token
 CREATE TABLE token (
-    codigo_qr VARCHAR(2048) PRIMARY KEY,
+    codigo_qr VARCHAR(255) PRIMARY KEY,
     estado_token VARCHAR(20) NOT NULL DEFAULT 'Activo',
     fecha_hora_vigencia DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_hora_expiracion DATETIME,
