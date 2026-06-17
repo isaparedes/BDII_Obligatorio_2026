@@ -134,6 +134,7 @@ BEGIN
         FROM evento
         WHERE id_estadio = NEW.id_estadio
         AND fecha_evento = NEW.fecha_evento
+        AND hora_evento = NEW.hora_evento
     )
     THEN
         SIGNAL SQLSTATE '45000'
