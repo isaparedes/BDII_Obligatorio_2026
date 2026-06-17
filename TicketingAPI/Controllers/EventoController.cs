@@ -22,8 +22,10 @@ public class EventoController : ControllerBase
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> CrearEvento([FromBody] CrearEventoDTO dto)
     {
+        /*
         if (await _repo.ExisteEvento(dto.FechaEvento, dto.HoraEvento, dto.IdEstadio))
             return BadRequest("Un evento en ese estadio en esa fecha ya está registrado");
+        */
 
         var mailAdmin = User.FindFirst(ClaimTypes.Email)?.Value;
         await _repo.CrearEvento(dto, mailAdmin!);

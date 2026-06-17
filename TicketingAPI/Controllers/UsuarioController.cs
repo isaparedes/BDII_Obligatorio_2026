@@ -38,7 +38,7 @@ public class UsuarioController : ControllerBase
     }
 
     [HttpPost("registro/administrador")]
-    [Authorize(Roles = "Administrador")]
+    [AllowAnonymous]
     public async Task<IActionResult> RegistrarAdministrador([FromBody] RegistroAdministradorDTO dto)
     {
         if (await _repo.ExisteMail(dto.Mail))

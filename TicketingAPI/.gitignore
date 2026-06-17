@@ -1,0 +1,12 @@
+# Credenciales
+appsettings.Development.json
+
+# Otros archivos
+bin/
+obj/
+
+# VS Code
+.vscode/
+
+# Secrets de usuario
+*.user

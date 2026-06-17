@@ -16,6 +16,7 @@ public class EventoRepository
     }
 
     // Sacar después ya que es una restricción (trigger)
+    /*
     public async Task<bool> ExisteEvento(DateTime fechaEvento, TimeSpan horaEvento, int idEstadio)
     {
         using var conn = _db.CreateConnection();
@@ -29,6 +30,7 @@ public class EventoRepository
         );
         return resultado > 0;
     }
+    */
     
     public async Task CrearEvento(CrearEventoDTO dto, string mailAdmin)
     {
