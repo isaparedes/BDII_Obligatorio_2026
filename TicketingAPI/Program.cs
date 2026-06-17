@@ -41,7 +41,9 @@ builder.Services.AddScoped<UsuarioRepository>();
 builder.Services.AddScoped<EventoRepository>();
 builder.Services.AddScoped<EstadioRepository>();
 builder.Services.AddScoped<SectorRepository>();
+builder.Services.AddScoped<TokenRepository>();
 builder.Services.AddSingleton<JwtService>();
+builder.Services.AddHostedService<TokenRefreshService>();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
