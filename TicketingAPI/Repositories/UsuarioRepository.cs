@@ -132,4 +132,21 @@ public class UsuarioRepository
         );
         return resultado > 0;
     }
+
+    public async Task<int> VerificarUsuarioGral(VerificarUsuarioGralDTO dto)
+    {
+        using var conn = _db.CreateConnection();
+
+        return await conn.ExecuteAsync(
+            @"UPDATE usuario_general
+            SET estado_verificacion = @EstadoVerificacion
+            WHERE mail = @Mail",
+            new
+            {
+                dto.EstadoVerificacion,
+                dto.Mail
+            }
+        );
+    }
+
 }
