@@ -14,11 +14,11 @@ public class CompraRepository
         _db = db;
     }
 
+    // Crear una nueva compra
     public async Task<int> CrearCompra(string mailComprador)
     {
         using var conn = _db.CreateConnection();
 
-        // Obtener la comision vigente
         var idComision = await conn.QueryFirstOrDefaultAsync<int>(@"
             SELECT id_comision FROM comision
             WHERE fecha_inicio <= CURDATE() AND fecha_fin >= CURDATE()
@@ -28,7 +28,6 @@ public class CompraRepository
         if (idComision == 0)
             throw new Exception("No hay comisión vigente");
 
-        // Crear la compra con monto 1, el trigger lo actualiza
         var idCompra = await conn.QueryFirstOrDefaultAsync<int>(@"
             INSERT INTO compra (fecha_compra, estado_compra, monto_total, mail_comprador, id_comision)
             VALUES (CURDATE(), 'Pendiente', 1, @MailComprador, @IdComision);
@@ -39,18 +38,17 @@ public class CompraRepository
         return idCompra;
     }
 
+    // Agregar una nueva entrada a una compra
     public async Task AgregarEntrada(int idCompra, EntradaItemDTO entrada)
     {
         using var conn = _db.CreateConnection();
 
-        // Obtener el estadio donde se organiza el evento
         var idEstadio = await conn.QueryFirstOrDefaultAsync<int>(@"
             SELECT id_estadio FROM evento
             WHERE id_evento = @IdEvento",
             new { entrada.IdEvento }
         );
 
-        // Obtener el costo del sector para cumplir RNE39
         var costoEntrada = await conn.QueryFirstOrDefaultAsync<decimal>(@"
             SELECT costo_sector FROM sector
             WHERE id_estadio = @IdEstadio AND nombre_sector = @NombreSector",
@@ -76,6 +74,7 @@ public class CompraRepository
         );
     }
 
+    // Confirmar el pago de una compra
     public async Task ConfirmarCompra(int idCompra)
     {
         using var conn = _db.CreateConnection();
@@ -86,6 +85,7 @@ public class CompraRepository
         );
     }
 
+    // Obtener una compra por su id_compra
     public async Task<CompraResponseDTO?> ObtenerCompra(int idCompra)
     {
         using var conn = _db.CreateConnection();
@@ -111,6 +111,7 @@ public class CompraRepository
         return compra;
     }
 
+    // Obtener las compras de un usuario_general por su mail
     public async Task<IEnumerable<CompraResponseDTO>> ObtenerComprasPorUsuario(string mail)
     {
         using var conn = _db.CreateConnection();

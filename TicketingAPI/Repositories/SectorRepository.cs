@@ -15,6 +15,7 @@ public class SectorRepository
         _db = db;
     }
 
+    // Averiguar si existe un sector (por su nombre_sector e id_estadio al que pertenece)
      public async Task<bool> ExisteSector(int idEstadio, string nombreSector)
     {
         using var conn = _db.CreateConnection();
@@ -28,6 +29,7 @@ public class SectorRepository
         return resultado > 0;
     }
 
+    // Crear un nuevo sector
     public async Task CrearSector(CrearSectorDTO dto)
     {
         using var conn = _db.CreateConnection();

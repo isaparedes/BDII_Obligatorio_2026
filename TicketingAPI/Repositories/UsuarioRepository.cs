@@ -15,6 +15,7 @@ public class UsuarioRepository
         _db = db;
     }
 
+    // Averiguar si existe un usuario (por su mail)
     public async Task<bool> ExisteMail(string mail)
     {
         using var conn = _db.CreateConnection();
@@ -25,6 +26,7 @@ public class UsuarioRepository
         return resultado > 0;
     }
 
+    // Registrar nuevo usuario
     private async Task InsertarUsuarioBase(IDbConnection conn, string mail, string hash, dynamic dto)
     {
         await conn.ExecuteAsync(@"
@@ -59,6 +61,7 @@ public class UsuarioRepository
         }
     }
 
+    // Registrar datos de un nuevo usuario_general
     public async Task RegistrarUsuarioGeneral(RegistroUsuarioDTO dto, string hash)
     {
         using var conn = _db.CreateConnection();
@@ -68,6 +71,8 @@ public class UsuarioRepository
             new { dto.Mail }
         );
     }
+
+    // Registrar datos de un nuevo administrador
 
     public async Task RegistrarAdministrador(RegistroAdministradorDTO dto, string hash)
     {
@@ -79,6 +84,7 @@ public class UsuarioRepository
         );
     }
 
+    // Registrar datos de un nuevo funcionario
     public async Task RegistrarFuncionario(RegistroFuncionarioDTO dto, string hash)
     {
         using var conn = _db.CreateConnection();
@@ -89,6 +95,7 @@ public class UsuarioRepository
         );
     }
 
+    // Obtener un usuario por su mail
     public async Task<Usuario?> ObtenerPorMail(string mail)
     {
         using var conn = _db.CreateConnection();
@@ -98,6 +105,7 @@ public class UsuarioRepository
         );
     }
 
+    // Obtener el rol de un usuario por su mail
     public async Task<string?> ObtenerRol(string mail)
     {
         using var conn = _db.CreateConnection();
@@ -123,6 +131,7 @@ public class UsuarioRepository
         return null;
     }
 
+    // Validar inicio de sesión de un usuario
     public async Task<bool> ValidarCredenciales(string mail, string hashContrasena)
     {
         using var conn = _db.CreateConnection();
@@ -133,6 +142,7 @@ public class UsuarioRepository
         return resultado > 0;
     }
 
+    // Cambiar estado de verificación de un usuario (aprobar o rechazar)
     public async Task<int> VerificarUsuarioGral(VerificarUsuarioGralDTO dto)
     {
         using var conn = _db.CreateConnection();
