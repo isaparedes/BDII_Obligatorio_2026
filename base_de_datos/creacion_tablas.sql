@@ -11,7 +11,7 @@ CREATE TABLE usuario (
     pais_direccion VARCHAR(50) NOT NULL,
     localidad VARCHAR(50) NOT NULL,
     calle VARCHAR(50) NOT NULL,
-    numero_calle INT NOT NULL,
+    numero_calle VARCHAR(10) NOT NULL, -- Para soportar Ej: "3333 bis"
     codigo_postal VARCHAR(20) NOT NULL,
     UNIQUE (pais_documento, tipo_documento, numero_documento)
 );
