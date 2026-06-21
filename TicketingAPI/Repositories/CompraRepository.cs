@@ -38,21 +38,27 @@ public class CompraRepository
         return idCompra;
     }
 
-    // Agregar una nueva entrada a una compra
+    // Agregar una entrada a una compra
     public async Task AgregarEntrada(int idCompra, EntradaItemDTO entrada)
     {
         using var conn = _db.CreateConnection();
 
-        var idEstadio = await conn.QueryFirstOrDefaultAsync<int>(@"
-            SELECT id_estadio FROM evento
+        var evento = await conn.QueryFirstOrDefaultAsync<Evento>(@"
+            SELECT id_estadio, fecha_evento FROM evento
             WHERE id_evento = @IdEvento",
             new { entrada.IdEvento }
         );
 
+        if (evento == null)
+            throw new Exception("El evento no existe");
+
+        if (evento.FechaEvento.Date <= DateTime.Today)
+            throw new Exception("No se pueden comprar entradas para un evento que ya ocurrió");
+
         var costoEntrada = await conn.QueryFirstOrDefaultAsync<decimal>(@"
             SELECT costo_sector FROM sector
             WHERE id_estadio = @IdEstadio AND nombre_sector = @NombreSector",
-            new { idEstadio, entrada.NombreSector }
+            new { evento.IdEstadio, entrada.NombreSector }
         );
 
         if (costoEntrada == 0)
@@ -68,14 +74,14 @@ public class CompraRepository
                 CostoEntrada = costoEntrada,
                 IdCompra = idCompra,
                 entrada.IdEvento,
-                IdEstadio = idEstadio,
+                IdEstadio = evento.IdEstadio,
                 entrada.NombreSector
             }
         );
     }
 
-    // Confirmar el pago de una compra
-    public async Task ConfirmarCompra(int idCompra)
+    // Confirmar "pago" de compra
+    public async Task PagarCompra(int idCompra)
     {
         using var conn = _db.CreateConnection();
         await conn.ExecuteAsync(@"
@@ -85,7 +91,7 @@ public class CompraRepository
         );
     }
 
-    // Obtener una compra por su id_compra
+    // Obtener una compra  por su id_compra
     public async Task<CompraResponseDTO?> ObtenerCompra(int idCompra)
     {
         using var conn = _db.CreateConnection();
@@ -100,7 +106,7 @@ public class CompraRepository
         if (compra == null) return null;
 
         var entradas = await conn.QueryAsync<EntradaResponseDTO>(@"
-            SELECT id_entrada, costo_entrada, estado_entrada, 
+            SELECT id_entrada, costo_entrada, estado_entrada,
                    id_evento, nombre_sector, mail_titular
             FROM entrada
             WHERE id_compra = @IdCompra",
@@ -111,7 +117,7 @@ public class CompraRepository
         return compra;
     }
 
-    // Obtener las compras de un usuario_general por su mail
+    // Obtener las compras realizadas por un usuario_general a través de su mail
     public async Task<IEnumerable<CompraResponseDTO>> ObtenerComprasPorUsuario(string mail)
     {
         using var conn = _db.CreateConnection();

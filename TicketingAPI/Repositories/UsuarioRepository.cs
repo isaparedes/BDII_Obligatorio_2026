@@ -79,8 +79,8 @@ public class UsuarioRepository
         using var conn = _db.CreateConnection();
         await InsertarUsuarioBase(conn, dto.Mail, hash, dto);
         await conn.ExecuteAsync(
-            "INSERT INTO administrador (mail, fecha_asignacion, pais_sede) VALUES (@Mail, @FechaAsignacion, @PaisSede)",
-            new { dto.Mail, dto.FechaAsignacion, dto.PaisSede }
+            "INSERT INTO administrador (mail, fecha_asignacion, pais_sede) VALUES (@Mail, CURDATE(), @PaisSede)",
+            new { dto.Mail, dto.PaisSede }
         );
     }
 

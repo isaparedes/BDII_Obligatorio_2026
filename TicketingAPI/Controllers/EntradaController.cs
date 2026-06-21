@@ -33,6 +33,11 @@ public class EntradaController : ControllerBase
         var entrada = await _repo.ObtenerPorId(idEntrada);
         if (entrada == null)
             return NotFound("Entrada no encontrada");
+
+        var mailTitular = User.FindFirst(ClaimTypes.Email)?.Value!;
+        if (entrada.MailTitular != mailTitular)
+            return Forbid();
+
         return Ok(entrada);
     }
 }

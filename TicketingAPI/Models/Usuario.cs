@@ -10,6 +10,6 @@ public class Usuario
     public string PaisDireccion { get; set; } = string.Empty;
     public string Localidad { get; set; } = string.Empty;
     public string Calle { get; set; } = string.Empty;
-    public int NumeroCalle { get; set; }
+    public string NumeroCalle { get; set; } = string.Empty;
     public string CodigoPostal { get; set; } = string.Empty;
 }

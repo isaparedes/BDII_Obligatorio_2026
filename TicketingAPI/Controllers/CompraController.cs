@@ -38,8 +38,6 @@ public class CompraController : ControllerBase
                 await _repo.AgregarEntrada(idCompra, entrada);
             }
 
-            await _repo.ConfirmarCompra(idCompra);
-
             var compra = await _repo.ObtenerCompra(idCompra);
             return Ok(compra);
         }
@@ -49,6 +47,25 @@ public class CompraController : ControllerBase
         }
     }
 
+    [HttpPut("{idCompra}/pagar")]
+    [Authorize(Roles = "UsuarioGeneral")]
+    public async Task<IActionResult> PagarCompra(int idCompra)
+    {
+        var compra = await _repo.ObtenerCompra(idCompra);
+        if (compra == null)
+            return NotFound("Compra no encontrada");
+
+        var mail = User.FindFirst(ClaimTypes.Email)?.Value!;
+        if (compra.MailComprador != mail)
+            return Forbid();
+
+        if (compra.EstadoCompra == "Paga")
+            return BadRequest("La compra ya fue pagada");
+
+        await _repo.PagarCompra(idCompra);
+        return Ok("Compra pagada correctamente");
+    }
+
     [HttpGet("{idCompra}")]
     [Authorize]
     public async Task<IActionResult> ObtenerCompra(int idCompra)
@@ -56,6 +73,11 @@ public class CompraController : ControllerBase
         var compra = await _repo.ObtenerCompra(idCompra);
         if (compra == null)
             return NotFound("Compra no encontrada");
+
+        var mailComprador = User.FindFirst(ClaimTypes.Email)?.Value!;
+        if (compra.MailComprador != mailComprador)
+            return Forbid();
+
         return Ok(compra);
     }
 

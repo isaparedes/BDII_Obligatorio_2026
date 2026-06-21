@@ -45,6 +45,7 @@ builder.Services.AddScoped<SectorRepository>();
 builder.Services.AddScoped<CompraRepository>();
 builder.Services.AddScoped<EntradaRepository>();
 builder.Services.AddScoped<TransferenciaRepository>();
+builder.Services.AddScoped<EquipoRepository>();
 builder.Services.AddSingleton<JwtService>();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;

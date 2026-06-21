@@ -22,10 +22,10 @@ public class EquipoController : ControllerBase
     public async Task<IActionResult> CrearEquipo([FromBody] CrearEquipoDTO dto)
     {
          if (await _repo.ExisteEquipo(dto.NombreEquipo))
-            return BadRequest("El sector ya está registrado");
+            return BadRequest("El equipo ya está registrado");
             
         await _repo.CrearEquipo(dto);
-        return Ok("Sector creado correctamente");
+        return Ok("Equipo creado correctamente");
     }
 
     [HttpGet]

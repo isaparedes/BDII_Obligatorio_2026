@@ -81,6 +81,7 @@ public class UsuarioController : ControllerBase
         });
     }
 
+    // Chequear esto
     [HttpGet("{mail}")]
     [Authorize]
     public async Task<IActionResult> ObtenerUsuario(string mail)
