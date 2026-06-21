@@ -48,4 +48,14 @@ public class SectorRepository
             }
         );
     }
+
+    // Obtener sectores de un estadio por id_estadio
+    public async Task<IEnumerable<Sector>> ObtenerPorEstadio(int idEstadio)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<Sector>(
+            "SELECT * FROM sector WHERE id_estadio = @IdEstadio",
+            new { IdEstadio = idEstadio }
+        );
+    }
 }

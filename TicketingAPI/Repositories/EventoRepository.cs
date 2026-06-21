@@ -53,10 +53,10 @@ public class EventoRepository
     }
 
     // Obtener todos los eventos registrados
-    public async Task<IEnumerable<Evento>> ObtenerTodos()
+    public async Task<IEnumerable<EventoResponseDTO>> ObtenerTodos()
     {
         using var conn = _db.CreateConnection();
-        return await conn.QueryAsync<Evento>(
+        return await conn.QueryAsync<EventoResponseDTO>(
             "SELECT * FROM evento"
         );
     }  

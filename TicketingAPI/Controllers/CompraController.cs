@@ -21,11 +21,9 @@ public class CompraController : ControllerBase
     [Authorize(Roles = "UsuarioGeneral")]
     public async Task<IActionResult> RealizarCompra([FromBody] CrearCompraDTO dto)
     {
-        // Validar que mande al menos una entrada
         if (dto.Entradas == null || dto.Entradas.Count == 0)
             return BadRequest("Debe incluir al menos una entrada");
 
-        // Validar máximo 5 entradas (el trigger también lo controla)
         if (dto.Entradas.Count > 5)
             return BadRequest("No puede comprar más de 5 entradas por transacción");
 
@@ -33,19 +31,15 @@ public class CompraController : ControllerBase
 
         try
         {
-            // Crear la compra
             var idCompra = await _repo.CrearCompra(mailComprador);
 
-            // Agregar cada entrada
             foreach (var entrada in dto.Entradas)
             {
                 await _repo.AgregarEntrada(idCompra, entrada);
             }
 
-            // Confirmar la compra
             await _repo.ConfirmarCompra(idCompra);
 
-            // Devolver la compra completa con sus entradas
             var compra = await _repo.ObtenerCompra(idCompra);
             return Ok(compra);
         }

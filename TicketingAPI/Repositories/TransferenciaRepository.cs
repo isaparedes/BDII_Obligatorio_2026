@@ -35,7 +35,7 @@ public class TransferenciaRepository
     }
 
     // Aceptar o rechazar transferencia de entrada
-    public async Task ResponderTransferencia(int idTransferencia, string estadoTransferencia, string mailDestinatario)
+    public async Task ResponderTransferencia(int idTransferencia, string estadoTransferencia)
     {
         using var conn = _db.CreateConnection();
 

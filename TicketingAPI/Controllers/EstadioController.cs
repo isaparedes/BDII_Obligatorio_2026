@@ -27,4 +27,26 @@ public class EstadioController : ControllerBase
         await _repo.CrearEstadio(dto);
         return Ok("Estadio creado correctamente");
     }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> ObtenerEstadios()
+    {
+        var estadios = await _repo.ObtenerTodos();
+        if (estadios == null)
+            return NotFound("No hay estadios disponibles");
+
+        return Ok(estadios);
+    }
+
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerEstadio(int id)
+    {
+        var estadio = await _repo.ObtenerPorId(id);
+        if (estadio == null)
+            return NotFound("Estadio no encontrado");
+
+        return Ok(estadio);
+    }
 }
