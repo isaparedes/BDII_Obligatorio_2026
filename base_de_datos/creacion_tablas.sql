@@ -167,7 +167,7 @@ CREATE TABLE transferencia (
     FOREIGN KEY (id_entrada) REFERENCES entrada(id_entrada),
     FOREIGN KEY (mail_remitente) REFERENCES usuario_general(mail),
     FOREIGN KEY (mail_destinatario) REFERENCES usuario_general(mail),
-    CHECK (fecha_transferencia < fecha_aceptacion), -- RNE27
+    CHECK (fecha_transferencia <= fecha_aceptacion), -- RNE27
     CHECK (estado_transferencia IN ('En proceso', 'Aceptada', 'Rechazada')), -- RNE29
     CHECK (mail_remitente <> mail_destinatario) -- RNE32
 );
