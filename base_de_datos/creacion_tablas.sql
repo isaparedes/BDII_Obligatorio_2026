@@ -191,7 +191,7 @@ CREATE TABLE token (
     FOREIGN KEY (id_entrada) REFERENCES entrada(id_entrada),
     FOREIGN KEY (id_dispositivo_valida) REFERENCES dispositivo(id_dispositivo),
     CHECK (estado_token IN ('Activo', 'Expirado')), -- RNE36
-    CHECK (fecha_hora_vigencia < fecha_hora_validacion),
+    CHECK (fecha_hora_vigencia <= fecha_hora_validacion),
     CHECK (fecha_hora_expiracion = DATE_ADD(fecha_hora_vigencia, INTERVAL 30 SECOND)) -- RNE35
 );
 
