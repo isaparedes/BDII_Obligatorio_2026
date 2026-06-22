@@ -1,5 +1,5 @@
-using MySql.Data.MySqlClient;
-using System.Data;
+using MySqlConnector;
+using System.Data.Common;
 
 namespace TicketingAPI.Database;
 
@@ -13,6 +13,6 @@ public class DatabaseConnection
             .GetConnectionString("DefaultConnection")!;
     }
 
-    public IDbConnection CreateConnection()
+    public DbConnection CreateConnection()
         => new MySqlConnection(_connectionString);
 }

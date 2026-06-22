@@ -31,14 +31,12 @@ public class CompraController : ControllerBase
 
         try
         {
-            var idCompra = await _repo.CrearCompra(mailComprador);
-
-            foreach (var entrada in dto.Entradas)
-            {
-                await _repo.AgregarEntrada(idCompra, entrada);
-            }
+            var idCompra = await _repo.RealizarCompra(
+                mailComprador,
+                dto.Entradas);
 
             var compra = await _repo.ObtenerCompra(idCompra);
+
             return Ok(compra);
         }
         catch (Exception ex)
@@ -46,6 +44,7 @@ public class CompraController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+    
 
     [HttpPut("{idCompra}/pagar")]
     [Authorize(Roles = "UsuarioGeneral")]

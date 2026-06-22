@@ -19,6 +19,41 @@ public class TransferenciaRepository
     public async Task<int> CrearTransferencia(CrearTransferenciaDTO dto, string mailRemitente)
     {
         using var conn = _db.CreateConnection();
+
+        var existeTransferencia = await conn.QueryFirstOrDefaultAsync<int>(@"
+            SELECT 1
+            FROM transferencia 
+            WHERE id_entrada = @IdEntrada
+            AND estado_transferencia = 'En proceso'
+            LIMIT 1",
+            new 
+            { dto.IdEntrada }
+        );
+
+        var entrada = await conn.QueryFirstOrDefaultAsync<Entrada>(
+            "SELECT * FROM entrada WHERE id_entrada = @IdEntrada",
+            new { dto.IdEntrada }
+        );
+
+        if (entrada == null)
+            throw new Exception("La entrada no existe");
+
+        if (entrada.MailTitular != mailRemitente)
+            throw new Exception("No eres el dueño de la entrada");
+
+
+        if (existeTransferencia != 0)
+            throw new Exception("Ya existe una transferencia en proceso con dicha entrada");
+        
+
+        var existeUsuario = await conn.QueryFirstOrDefaultAsync<int>(
+            "SELECT COUNT(*) FROM usuario WHERE mail = @Mail",
+            new { Mail = dto.MailDestinatario }
+        );
+
+        if (existeUsuario == 0)
+            throw new Exception("El destinatario no existe");
+
         return await conn.QueryFirstOrDefaultAsync<int>(@"
             INSERT INTO transferencia 
             (fecha_transferencia, estado_transferencia, id_entrada, mail_remitente, mail_destinatario)
@@ -38,25 +73,67 @@ public class TransferenciaRepository
     public async Task ResponderTransferencia(int idTransferencia, string estadoTransferencia)
     {
         using var conn = _db.CreateConnection();
+        await conn.OpenAsync();
 
-        if (estadoTransferencia == "Aceptada")
+        using var tx = conn.BeginTransaction();
+
+        try
         {
-            await conn.ExecuteAsync(@"
-                UPDATE transferencia 
-                SET estado_transferencia = @Estado,
-                    fecha_aceptacion = CURDATE()
-                WHERE id_transferencia = @IdTransferencia",
-                new { Estado = estadoTransferencia, IdTransferencia = idTransferencia }
+            var transferencia = await conn.QueryFirstOrDefaultAsync<Transferencia>(@"
+                SELECT estado_transferencia, id_entrada, mail_destinatario
+                FROM transferencia
+                WHERE id_transferencia = @IdTransferencia
+                FOR UPDATE",
+                new { IdTransferencia = idTransferencia },
+                tx
             );
+
+            if (transferencia == null)
+                throw new Exception("La transferencia no existe");
+
+            if (transferencia.EstadoTransferencia != "En proceso")
+                throw new Exception("La transferencia ya fue procesada");
+
+            if (estadoTransferencia == "Aceptada")
+            {
+                await conn.ExecuteAsync(@"
+                    UPDATE entrada
+                    SET mail_titular = @MailDestinatario
+                    WHERE id_entrada = @IdEntrada",
+                    new
+                    {
+                        transferencia.IdEntrada,
+                        transferencia.MailDestinatario
+                    },
+                    tx
+                );
+
+                await conn.ExecuteAsync(@"
+                    UPDATE transferencia 
+                    SET estado_transferencia = 'Aceptada',
+                    fecha_aceptacion = NOW()
+                    WHERE id_transferencia = @IdTransferencia",
+                    new { IdTransferencia = idTransferencia },
+                    tx
+                );
+            }
+            else
+            {
+                await conn.ExecuteAsync(@"
+                    UPDATE transferencia 
+                    SET estado_transferencia = 'Rechazada'
+                    WHERE id_transferencia = @IdTransferencia",
+                    new { IdTransferencia = idTransferencia },
+                    tx
+                );
+            }
+
+            tx.Commit();
         }
-        else
+        catch
         {
-            await conn.ExecuteAsync(@"
-                UPDATE transferencia 
-                SET estado_transferencia = @Estado
-                WHERE id_transferencia = @IdTransferencia",
-                new { Estado = estadoTransferencia, IdTransferencia = idTransferencia }
-            );
+            tx.Rollback();
+            throw;
         }
     }
 
