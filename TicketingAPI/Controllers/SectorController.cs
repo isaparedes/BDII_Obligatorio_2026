@@ -25,6 +25,14 @@ public class SectorController : ControllerBase
             return BadRequest("El sector ya está registrado");
             
         await _repo.CrearSector(dto);
-        return Ok("sector creado correctamente");
+        return Ok("Sector creado correctamente");
+    }
+
+    [HttpGet("{idEstadio}")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerPorEstadio(int idEstadio)
+    {
+        var sectores = await _repo.ObtenerPorEstadio(idEstadio);
+        return Ok(sectores);
     }
 }

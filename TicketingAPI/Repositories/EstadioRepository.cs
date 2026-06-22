@@ -15,7 +15,8 @@ public class EstadioRepository
         _db = db;
     }
 
-     public async Task<bool> ExisteEstadio(string nombreEstadio)
+    // Averiguar si existe un estadio (por su nombre_estadio)
+    public async Task<bool> ExisteEstadio(string nombreEstadio)
     {
         using var conn = _db.CreateConnection();
         var resultado = await conn.QueryFirstOrDefaultAsync<int>(
@@ -25,6 +26,7 @@ public class EstadioRepository
         return resultado > 0;
     }
 
+    // Crear nuevo estadio
     public async Task CrearEstadio(CrearEstadioDTO dto)
     {
         using var conn = _db.CreateConnection();
@@ -42,6 +44,25 @@ public class EstadioRepository
                 dto.CalleEstadio,
                 dto.NumeroEstadio,
             }
+        );
+    }
+
+    // Obtener todos los estadios registrados
+    public async Task<IEnumerable<Estadio>> ObtenerTodos()
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<Estadio>(
+            "SELECT * FROM estadio"
+        );
+    }  
+
+    // Obtener un estadio por su id_estadio
+    public async Task<Estadio?> ObtenerPorId(int idEstadio)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<Estadio>(
+            "SELECT * FROM estadio WHERE id_estadio = @IdEstadio",
+            new { IdEstadio = idEstadio }
         );
     }
 }

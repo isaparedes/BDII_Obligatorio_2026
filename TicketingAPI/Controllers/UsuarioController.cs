@@ -81,6 +81,7 @@ public class UsuarioController : ControllerBase
         });
     }
 
+    // Chequear esto
     [HttpGet("{mail}")]
     [Authorize]
     public async Task<IActionResult> ObtenerUsuario(string mail)
@@ -91,4 +92,25 @@ public class UsuarioController : ControllerBase
 
         return Ok(usuario);
     }
+
+    [HttpPut("verificar")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> VerificarUsuario([FromBody] VerificarUsuarioGralDTO dto)
+    {
+        if (dto.EstadoVerificacion != "Aprobado" &&
+            dto.EstadoVerificacion != "No aprobado")
+        {
+            return BadRequest(
+                "El estado debe ser 'Aprobado' o 'No aprobado'"
+            );
+        }
+
+        var filas = await _repo.VerificarUsuarioGral(dto);
+
+        if (filas == 0)
+            return NotFound("Usuario general no encontrado");
+
+        return Ok("Estado de verificación actualizado correctamente");
+    }
+
 }

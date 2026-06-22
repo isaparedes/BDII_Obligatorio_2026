@@ -15,6 +15,7 @@ public class SectorRepository
         _db = db;
     }
 
+    // Averiguar si existe un sector (por su nombre_sector e id_estadio al que pertenece)
      public async Task<bool> ExisteSector(int idEstadio, string nombreSector)
     {
         using var conn = _db.CreateConnection();
@@ -28,6 +29,7 @@ public class SectorRepository
         return resultado > 0;
     }
 
+    // Crear un nuevo sector
     public async Task CrearSector(CrearSectorDTO dto)
     {
         using var conn = _db.CreateConnection();
@@ -44,6 +46,16 @@ public class SectorRepository
                 dto.CostoSector,
                 dto.Capacidad
             }
+        );
+    }
+
+    // Obtener sectores de un estadio por id_estadio
+    public async Task<IEnumerable<Sector>> ObtenerPorEstadio(int idEstadio)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<Sector>(
+            "SELECT * FROM sector WHERE id_estadio = @IdEstadio",
+            new { IdEstadio = idEstadio }
         );
     }
 }

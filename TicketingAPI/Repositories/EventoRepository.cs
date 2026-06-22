@@ -15,8 +15,7 @@ public class EventoRepository
         _db = db;
     }
 
-    // Sacar después ya que es una restricción (trigger)
-    /*
+    // Averiguar si un evento en cierta fecha, hora y estadio ya fue creado
     public async Task<bool> ExisteEvento(DateTime fechaEvento, TimeSpan horaEvento, int idEstadio)
     {
         using var conn = _db.CreateConnection();
@@ -30,8 +29,8 @@ public class EventoRepository
         );
         return resultado > 0;
     }
-    */
     
+    // Crear un nuevo evento
     public async Task CrearEvento(CrearEventoDTO dto, string mailAdmin)
     {
         using var conn = _db.CreateConnection();
@@ -53,6 +52,26 @@ public class EventoRepository
         );
     }
 
+    // Obtener todos los eventos registrados
+    public async Task<IEnumerable<EventoResponseDTO>> ObtenerTodos()
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<EventoResponseDTO>(
+            "SELECT * FROM evento"
+        );
+    }  
+
+    // Obtener un evento por su id_evento
+    public async Task<Evento?> ObtenerPorId(int idEvento)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<Evento>(
+            "SELECT * FROM evento WHERE id_evento = @IdEvento",
+            new { IdEvento = idEvento }
+        );
+    }
+
+    // Averiguar si un sector ya fue habilitado para cierto evento
     public async Task<bool> ExisteHabilitacion(int idEvento, string nombreSector)
     {
         using var conn = _db.CreateConnection();
@@ -66,6 +85,7 @@ public class EventoRepository
         return resultado > 0;
     }
 
+    // Habilitar un sector de un estadio para un evento
     public async Task HabilitarSector(HabilitarSectorDTO dto)
     {
         using var conn = _db.CreateConnection();
@@ -86,6 +106,17 @@ public class EventoRepository
         );
     }
 
+    // Obtener todos los sectores habilitados para un evento
+    public async Task<IEnumerable<Habilita>> ObtenerSectoresHabilitados(int idEvento)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<Habilita>(
+            "SELECT nombre_sector FROM habilita WHERE id_evento = @IdEvento",
+            new { IdEvento = idEvento }
+        );
+    }
+
+    // Averiguar si un funcionario ya fue asignado a un sector para cierto evento
     public async Task<bool> ExisteAsignacion(int idEvento, string nombreSector, string mailFuncionario)
     {
         using var conn = _db.CreateConnection();
@@ -100,6 +131,7 @@ public class EventoRepository
         return resultado > 0;
     }
 
+    // Asignar un funcionario a un sector para cierto evento
     public async Task AsignarFuncionario(AsignarFuncionarioDTO dto)
     {
         using var conn = _db.CreateConnection();
@@ -120,5 +152,15 @@ public class EventoRepository
                 dto.MailFuncionario
             }
         );
+    }
+
+    // Obtener todos los funcionarios asignados a sectores en un evento
+    public async Task<IEnumerable<Asignacion>> ObtenerFuncionariosAsignados(int idEvento)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<Asignacion>(
+            "SELECT nombre_sector, mail_funcionario FROM asignacion WHERE id_evento = @IdEvento",
+            new { IdEvento = idEvento }
+        );   
     }
 }

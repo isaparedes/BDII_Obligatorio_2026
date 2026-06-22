@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using TicketingAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,10 @@ builder.Services.AddScoped<EventoRepository>();
 builder.Services.AddScoped<EstadioRepository>();
 builder.Services.AddScoped<SectorRepository>();
 builder.Services.AddScoped<TokenRepository>();
+builder.Services.AddScoped<CompraRepository>();
+builder.Services.AddScoped<EntradaRepository>();
+builder.Services.AddScoped<TransferenciaRepository>();
+builder.Services.AddScoped<EquipoRepository>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddHostedService<TokenRefreshService>();
 

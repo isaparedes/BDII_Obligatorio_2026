@@ -15,6 +15,7 @@ public class UsuarioRepository
         _db = db;
     }
 
+    // Averiguar si existe un usuario (por su mail)
     public async Task<bool> ExisteMail(string mail)
     {
         using var conn = _db.CreateConnection();
@@ -25,6 +26,7 @@ public class UsuarioRepository
         return resultado > 0;
     }
 
+    // Registrar nuevo usuario
     private async Task InsertarUsuarioBase(IDbConnection conn, string mail, string hash, dynamic dto)
     {
         await conn.ExecuteAsync(@"
@@ -59,6 +61,7 @@ public class UsuarioRepository
         }
     }
 
+    // Registrar datos de un nuevo usuario_general
     public async Task RegistrarUsuarioGeneral(RegistroUsuarioDTO dto, string hash)
     {
         using var conn = _db.CreateConnection();
@@ -69,16 +72,19 @@ public class UsuarioRepository
         );
     }
 
+    // Registrar datos de un nuevo administrador
+
     public async Task RegistrarAdministrador(RegistroAdministradorDTO dto, string hash)
     {
         using var conn = _db.CreateConnection();
         await InsertarUsuarioBase(conn, dto.Mail, hash, dto);
         await conn.ExecuteAsync(
-            "INSERT INTO administrador (mail, fecha_asignacion, pais_sede) VALUES (@Mail, @FechaAsignacion, @PaisSede)",
-            new { dto.Mail, dto.FechaAsignacion, dto.PaisSede }
+            "INSERT INTO administrador (mail, fecha_asignacion, pais_sede) VALUES (@Mail, CURDATE(), @PaisSede)",
+            new { dto.Mail, dto.PaisSede }
         );
     }
 
+    // Registrar datos de un nuevo funcionario
     public async Task RegistrarFuncionario(RegistroFuncionarioDTO dto, string hash)
     {
         using var conn = _db.CreateConnection();
@@ -89,6 +95,7 @@ public class UsuarioRepository
         );
     }
 
+    // Obtener un usuario por su mail
     public async Task<Usuario?> ObtenerPorMail(string mail)
     {
         using var conn = _db.CreateConnection();
@@ -98,6 +105,7 @@ public class UsuarioRepository
         );
     }
 
+    // Obtener el rol de un usuario por su mail
     public async Task<string?> ObtenerRol(string mail)
     {
         using var conn = _db.CreateConnection();
@@ -123,6 +131,7 @@ public class UsuarioRepository
         return null;
     }
 
+    // Validar inicio de sesión de un usuario
     public async Task<bool> ValidarCredenciales(string mail, string hashContrasena)
     {
         using var conn = _db.CreateConnection();
@@ -132,4 +141,22 @@ public class UsuarioRepository
         );
         return resultado > 0;
     }
+
+    // Cambiar estado de verificación de un usuario (aprobar o rechazar)
+    public async Task<int> VerificarUsuarioGral(VerificarUsuarioGralDTO dto)
+    {
+        using var conn = _db.CreateConnection();
+
+        return await conn.ExecuteAsync(
+            @"UPDATE usuario_general
+            SET estado_verificacion = @EstadoVerificacion
+            WHERE mail = @Mail",
+            new
+            {
+                dto.EstadoVerificacion,
+                dto.Mail
+            }
+        );
+    }
+
 }
