@@ -52,4 +52,6 @@ public class EventoController : ControllerBase
         await _repo.AsignarFuncionario(dto);
         return Ok("Funcionario asignado correctamente");
     }
+
+
 }

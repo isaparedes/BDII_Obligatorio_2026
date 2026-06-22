@@ -43,10 +43,12 @@ builder.Services.AddScoped<EventoRepository>();
 builder.Services.AddScoped<EstadioRepository>();
 builder.Services.AddScoped<SectorRepository>();
 builder.Services.AddScoped<TokenRepository>();
+builder.Services.AddScoped<ComisionRepository>();
 builder.Services.AddScoped<CompraRepository>();
 builder.Services.AddScoped<EntradaRepository>();
 builder.Services.AddScoped<TransferenciaRepository>();
 builder.Services.AddScoped<EquipoRepository>();
+builder.Services.AddScoped<EstadisticasRepository>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddHostedService<TokenRefreshService>();
 

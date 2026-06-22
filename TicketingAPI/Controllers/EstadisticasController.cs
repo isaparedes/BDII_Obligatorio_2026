@@ -7,7 +7,6 @@ namespace TicketingAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-
 public class EstadisticasController : ControllerBase
 {
     private readonly EstadisticasRepository _repo;
@@ -17,20 +16,19 @@ public class EstadisticasController : ControllerBase
         _repo = repo;
     }
 
-    /*
-    [HttpGet]
-    [Authorize(Roles = "Administrador")] 
+    [HttpGet("mayores-compradores")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> ObtenerMayoresCompradores()
     {
-        
+        var compradores = await _repo.ObtenerMayoresCompradores();
+        return Ok(compradores);
     }
 
-    [HttpGet]
-    [Authorize(Roles = "Administrador")] 
+    [HttpGet("eventos-mas-vendidos")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> ObtenerEventosMasVendidos()
     {
-        
+        var eventos = await _repo.ObtenerEventosMasVendidos();
+        return Ok(eventos);
     }
-    */
-
-} 
+}

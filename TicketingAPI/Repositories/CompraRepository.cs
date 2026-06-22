@@ -52,8 +52,20 @@ public class CompraRepository
         if (evento == null)
             throw new Exception("El evento no existe");
 
-        if (evento.FechaEvento.Date <= DateTime.Today)
+        if (evento.FechaEvento <= DateTime.Today)
             throw new Exception("No se pueden comprar entradas para un evento que ya ocurrió");
+
+        // Verificar que el sector está habilitado para ese evento
+        var sectorHabilitado = await conn.QueryFirstOrDefaultAsync<int>(@"
+            SELECT COUNT(*) FROM habilita
+            WHERE id_evento = @IdEvento
+            AND id_estadio = @IdEstadio
+            AND nombre_sector = @NombreSector",
+            new { entrada.IdEvento, evento.IdEstadio, entrada.NombreSector }
+        );
+
+        if (sectorHabilitado == 0)
+            throw new Exception("El sector no está habilitado para este evento");
 
         var costoEntrada = await conn.QueryFirstOrDefaultAsync<decimal>(@"
             SELECT costo_sector FROM sector
@@ -78,16 +90,53 @@ public class CompraRepository
                 entrada.NombreSector
             }
         );
+
+        var idEntrada = await conn.QueryFirstOrDefaultAsync<int>(
+            "SELECT LAST_INSERT_ID()"
+        );
+
+        var ahora = DateTime.Now;
+        await conn.ExecuteAsync(@"
+            INSERT INTO token
+            (codigo_qr, estado_token, fecha_hora_vigencia, fecha_hora_expiracion, id_entrada)
+            VALUES
+            (@CodigoQr, 'Activo', @Vigencia, DATE_ADD(@Vigencia, INTERVAL 30 SECOND), @IdEntrada)",
+            new
+            {
+                CodigoQr = Guid.NewGuid().ToString(),
+                Vigencia = ahora,
+                IdEntrada = idEntrada
+            }
+        );
     }
 
     // Confirmar "pago" de compra
     public async Task PagarCompra(int idCompra)
     {
         using var conn = _db.CreateConnection();
-        await conn.ExecuteAsync(@"
-            UPDATE compra SET estado_compra = 'Paga'
-            WHERE id_compra = @IdCompra",
+
+        // Obtener suma de entradas y valor de comision
+        var resultado = await conn.QueryFirstOrDefaultAsync<dynamic>(@"
+            SELECT 
+                SUM(e.costo_entrada) AS subtotal,
+                co.valor_comision
+            FROM entrada e
+            JOIN compra c ON e.id_compra = c.id_compra
+            JOIN comision co ON c.id_comision = co.id_comision
+            WHERE e.id_compra = @IdCompra",
             new { IdCompra = idCompra }
+        );
+
+        decimal subtotal = resultado.subtotal;
+        decimal comision = resultado.valor_comision;
+        decimal montoFinal = subtotal * (1 + comision / 100);
+
+        await conn.ExecuteAsync(@"
+            UPDATE compra 
+            SET estado_compra = 'Paga',
+                monto_total = @MontoFinal
+            WHERE id_compra = @IdCompra",
+            new { MontoFinal = montoFinal, IdCompra = idCompra }
         );
     }
 

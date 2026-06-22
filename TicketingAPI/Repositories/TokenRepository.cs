@@ -13,73 +13,60 @@ public class TokenRepository
         _db = db;
     }
 
-   public async Task RegenerarTokens()
+    public async Task RegenerarTokens()
     {
         using var conn = _db.CreateConnection();
- 
-        // Solo entradas Emitidas con evento futuro y token Activo
-        var tokens = await conn.QueryAsync<Token>(
-        @"
-        SELECT
-            t.codigo_qr              AS CodigoQr,
-            t.estado_token           AS EstadoToken,
-            t.fecha_hora_vigencia    AS FechaHoraVigencia,
-            t.fecha_hora_expiracion  AS FechaHoraExpiracion,
-            t.fecha_hora_validacion  AS FechaHoraValidacion,
-            t.id_entrada             AS IdEntrada,
-            t.id_dispositivo_valida  AS IdDispositivoValida
-        FROM token t
-        INNER JOIN entrada e  ON t.id_entrada  = e.id_entrada
-        INNER JOIN evento  ev ON e.id_evento   = ev.id_evento
-        WHERE
-            t.estado_token    = 'Activo'
-            AND e.estado_entrada = 'Emitida'
-            AND CONCAT(ev.fecha_evento, ' ', ev.hora_evento) > NOW()
-        ");
- 
-        foreach (var token in tokens)
-        {
-            // Expira token anterior
-            await conn.ExecuteAsync(
-            @"
+
+        // Expirar tokens vencidos
+        await conn.ExecuteAsync(@"
             UPDATE token
             SET estado_token = 'Expirado'
-            WHERE codigo_qr = @CodigoQr
-            ",
-            new { token.CodigoQr });
- 
-            // Genera nuevo token — se usa la misma base de tiempo
-            // para que el CHECK de la BD (expiracion = vigencia + 30s) se cumpla
-            var ahora = DateTime.Now;
-            var nuevoToken = new Token
-            {
-                CodigoQr             = Guid.NewGuid().ToString(),
-                EstadoToken          = "Activo",
-                FechaHoraVigencia    = ahora,
-                FechaHoraExpiracion  = ahora.AddSeconds(30),
-                IdEntrada            = token.IdEntrada
-            };
- 
-            await conn.ExecuteAsync(
-            @"
-            INSERT INTO token
-            (
-                codigo_qr,
-                estado_token,
-                fecha_hora_vigencia,
-                fecha_hora_expiracion,
-                id_entrada
-            )
-            VALUES
-            (
-                @CodigoQr,
-                @EstadoToken,
-                @FechaHoraVigencia,
-                @FechaHoraExpiracion,
-                @IdEntrada
-            )
-            ",
-            nuevoToken);
+            WHERE estado_token = 'Activo'
+            AND fecha_hora_expiracion < NOW()"
+        );
+
+        // Obtener entradas activas sin token activo
+        var entradas = await conn.QueryAsync<int>(@"
+            SELECT e.id_entrada
+            FROM entrada e
+            INNER JOIN evento ev ON e.id_evento = ev.id_evento
+            WHERE e.estado_entrada = 'Emitida'
+            AND CONCAT(ev.fecha_evento, ' ', ev.hora_evento) > NOW()
+            AND NOT EXISTS (
+                SELECT 1 FROM token t
+                WHERE t.id_entrada = e.id_entrada
+                AND t.estado_token = 'Activo'
+            )"
+        );
+
+        var ahora = DateTime.Now;
+        foreach (var idEntrada in entradas)
+        {
+            await conn.ExecuteAsync(@"
+                INSERT INTO token
+                (codigo_qr, estado_token, fecha_hora_vigencia, fecha_hora_expiracion, id_entrada)
+                VALUES
+                (@CodigoQr, 'Activo', @Vigencia, DATE_ADD(@Vigencia, INTERVAL 30 SECOND), @IdEntrada)",
+                new
+                {
+                    CodigoQr = Guid.NewGuid().ToString(),
+                    Vigencia = ahora,
+                    IdEntrada = idEntrada
+                }
+            );
         }
+
+        Console.WriteLine($"[{DateTime.Now}] Tokens regenerados para {entradas.Count()} entradas");
+    }
+
+    public async Task<Token?> ObtenerTokenActivo(int idEntrada)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<Token>(@"
+            SELECT * FROM token
+            WHERE id_entrada = @IdEntrada
+            AND estado_token = 'Activo'",
+            new { IdEntrada = idEntrada }
+        );
     }
 }
