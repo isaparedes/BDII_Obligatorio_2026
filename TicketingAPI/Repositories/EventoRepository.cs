@@ -61,6 +61,19 @@ public class EventoRepository
         );
     }  
 
+    // Obtener eventos futuros
+    public async Task<IEnumerable<EventoResponseDTO>> ObtenerFuturos()
+    {
+        using var conn = _db.CreateConnection();
+
+        return await conn.QueryAsync<EventoResponseDTO>(@"
+            SELECT * FROM evento
+            WHERE 
+            fecha_evento > CURDATE()
+            OR (fecha_evento = CURDATE() AND hora_evento >= CURTIME())
+        ");
+    }
+
     // Obtener un evento por su id_evento
     public async Task<Evento?> ObtenerPorId(int idEvento)
     {
@@ -138,11 +151,7 @@ public class EventoRepository
         await conn.ExecuteAsync(
             @"INSERT INTO asignacion
             (id_evento, id_estadio, nombre_sector, mail_funcionario)
-            SELECT
-                @IdEvento,
-                e.id_estadio,
-                @NombreSector,
-                @MailFuncionario
+            SELECT @IdEvento, e.id_estadio, @NombreSector, @MailFuncionario
             FROM evento e
             WHERE e.id_evento = @IdEvento",
             new
@@ -155,11 +164,27 @@ public class EventoRepository
     }
 
     // Obtener todos los funcionarios asignados a sectores en un evento
-    public async Task<IEnumerable<Asignacion>> ObtenerFuncionariosAsignados(int idEvento)
+    public async Task<IEnumerable<FuncionariosAsignadosDTO>> ObtenerFuncionariosAsignados(int idEvento)
     {
         using var conn = _db.CreateConnection();
-        return await conn.QueryAsync<Asignacion>(
-            "SELECT nombre_sector, mail_funcionario FROM asignacion WHERE id_evento = @IdEvento",
+        return await conn.QueryAsync<FuncionariosAsignadosDTO>(@"
+            SELECT nombre_sector, mail_funcionario 
+            FROM asignacion 
+            WHERE id_evento = @IdEvento",
+            new { IdEvento = idEvento }
+        );   
+    }
+
+     // Obtener todos los dispositivos habilitados para un evento (con su funcionario a cargo)
+    public async Task<IEnumerable<DispositivosHabilitadosDTO>> ObtenerDispositivosHabilitados(int idEvento)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<DispositivosHabilitadosDTO>(@"
+            SELECT a.nombre_sector, d.id_dispositivo, d.mail_funcionario
+            FROM asignacion a
+            JOIN dispositivo d
+            ON a.mail_funcionario = d.mail_funcionario
+            WHERE a.id_evento = @IdEvento",
             new { IdEvento = idEvento }
         );   
     }

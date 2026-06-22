@@ -42,6 +42,18 @@ public class EventoController : ControllerBase
         return Ok("Sector habilitado correctamente");
     }
 
+    [HttpGet("{idEvento}/sectores-habilitados")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> ObtenerSectoresHabilitados(int idEvento)
+    {
+        var sectores = await _repo.ObtenerSectoresHabilitados(idEvento);
+
+        if (sectores == null || !sectores.Any())
+            return NotFound("No hay sectores habilitados para este evento");
+
+        return Ok(sectores);
+    }
+
     [HttpPost("asignar-funcionario")]
     [Authorize(Roles = "Administrador")]
      public async Task<IActionResult> AsignarFuncionario([FromBody] AsignarFuncionarioDTO dto)
@@ -53,5 +65,57 @@ public class EventoController : ControllerBase
         return Ok("Funcionario asignado correctamente");
     }
 
+    [HttpGet("{idEvento}/funcionarios-asignados")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> ObtenerFuncionariosAsignados(int idEvento)
+    {
+        var asignaciones = await _repo.ObtenerFuncionariosAsignados(idEvento);
+
+        if (asignaciones == null || !asignaciones.Any())
+            return NotFound("No hay funcionarios asignados a este evento");
+
+        return Ok(asignaciones);
+    }
+
+    [HttpGet("{idEvento}/dispositivos-habilitados")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<IActionResult> ObtenerDispositivosHabilitados(int idEvento)
+    {
+        var dispositivos = await _repo.ObtenerDispositivosHabilitados(idEvento);
+
+        if (dispositivos == null || !dispositivos.Any())
+            return NotFound("No hay dispositivos habilitados para este evento");
+
+        return Ok(dispositivos);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Administrador")] 
+    public async Task<IActionResult> ObtenerTodos()
+    {
+        var eventos = await _repo.ObtenerTodos();
+        return Ok(eventos);
+    }
+
+    [HttpGet("futuros")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerFuturos()
+    {
+        var eventos = await _repo.ObtenerFuturos();
+
+        return Ok(eventos);
+    }
+
+    [HttpGet("{idEvento}")]
+    [Authorize] 
+    public async Task<IActionResult> ObtenerPorId(int idEvento)
+    {
+        var evento = await _repo.ObtenerPorId(idEvento);
+
+        if (evento == null)
+            return NotFound("Evento no encontrado");
+
+        return Ok(evento);
+    }
 
 }
