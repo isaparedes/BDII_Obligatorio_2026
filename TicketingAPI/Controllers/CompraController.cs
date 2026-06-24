@@ -21,6 +21,9 @@ public class CompraController : ControllerBase
     [Authorize(Roles = "UsuarioGeneral")]
     public async Task<IActionResult> RealizarCompra([FromBody] CrearCompraDTO dto)
     {
+
+        // No comprar un evento pasado ni en un sector no habilitado
+        // No comprar si el sector superó la capacidad (ver en EventoRepository)
         if (dto.Entradas == null || dto.Entradas.Count == 0)
             return BadRequest("Debe incluir al menos una entrada");
 

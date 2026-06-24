@@ -27,6 +27,11 @@ public class TransferenciaController : ControllerBase
         if (string.IsNullOrEmpty(dto.MailDestinatario))
             return BadRequest("Debe incluir un mail para el destinatario");
 
+        // Validar lo de max 3 transf (aunque esté en la bdd)
+        // Validar que no se transfiera una entrada de un evento que ya sucedió  (aunque esté en la bdd)
+        // que la entrada no esté consumida 
+        
+
         var mailRemitente = User.FindFirst(ClaimTypes.Email)?.Value!;
 
         try

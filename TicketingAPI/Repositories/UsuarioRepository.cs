@@ -25,7 +25,7 @@ public class UsuarioRepository
         );
         return resultado > 0;
     }
-
+    
     // Registrar nuevo usuario
     private async Task InsertarUsuarioBase(IDbConnection conn, string mail, string hash, dynamic dto)
     {

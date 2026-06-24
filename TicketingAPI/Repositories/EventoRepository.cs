@@ -29,6 +29,23 @@ public class EventoRepository
         );
         return resultado > 0;
     }
+
+    // Averiguar si un evento ya sucedió
+    public async Task<bool> EsEventoPasado(int idEvento)
+    {
+        using var conn = _db.CreateConnection();
+        var evento = await conn.QueryFirstOrDefaultAsync<Evento>(
+            "SELECT fecha_evento, hora_evento FROM evento WHERE id_evento = @IdEvento",
+            new { IdEvento = idEvento }
+        );
+
+        if (evento == null)
+            return false;
+            
+        var fechaHoraEvento = evento.FechaEvento.Date + evento.HoraEvento;
+
+        return fechaHoraEvento < DateTime.Now;
+    }
     
     // Crear un nuevo evento
     public async Task CrearEvento(CrearEventoDTO dto, string mailAdmin)
@@ -84,6 +101,34 @@ public class EventoRepository
         );
     }
 
+    // Obtener el país sede de un administrador
+
+    public async Task<string?> ObtenerPaisAdmin(string mail)
+    {
+        using var conn = _db.CreateConnection();
+
+        return await conn.QueryFirstOrDefaultAsync<string>(
+            @"SELECT pais_sede
+            FROM administrador
+            WHERE mail = @Mail",
+            new { Mail = mail }
+        );
+    }
+
+    // Obtener el país donde se realiza un evento
+    public async Task<string?> ObtenerPaisEvento(int idEvento)
+    {
+        using var conn = _db.CreateConnection();
+
+        return await conn.QueryFirstOrDefaultAsync<string>(
+            @"SELECT es.pais_estadio
+            FROM evento e
+            JOIN estadio es ON e.id_estadio = es.id_estadio
+            WHERE e.id_evento = @IdEvento",
+            new { IdEvento = idEvento }
+        );
+    }
+
     // Averiguar si un sector ya fue habilitado para cierto evento
     public async Task<bool> ExisteHabilitacion(int idEvento, string nombreSector)
     {
@@ -129,6 +174,11 @@ public class EventoRepository
         );
     }
 
+    // Obtener capacidad del sector antes de validar compra 
+    // public Task<int> ObtenerCapacidadSector()
+    // Obtener entradas vendidas para un sector en un evento 
+    // public Task<int> ObtenerEntradasVendidas()
+
     // Averiguar si un funcionario ya fue asignado a un sector para cierto evento
     public async Task<bool> ExisteAsignacion(int idEvento, string nombreSector, string mailFuncionario)
     {
@@ -143,6 +193,18 @@ public class EventoRepository
         );
         return resultado > 0;
     }
+
+    // Averiguar si existe un funcionario (por su mail) (CAMBIAR)
+    public async Task<bool> ExisteFuncionario(string mail)
+    {
+        using var conn = _db.CreateConnection();
+        var resultado = await conn.QueryFirstOrDefaultAsync<int>(
+            "SELECT COUNT(*) FROM funcionario WHERE mail = @Mail",
+            new { Mail = mail }
+        );
+        return resultado > 0;
+    }
+
 
     // Asignar un funcionario a un sector para cierto evento
     public async Task AsignarFuncionario(AsignarFuncionarioDTO dto)

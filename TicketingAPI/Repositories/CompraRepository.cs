@@ -16,9 +16,7 @@ public class CompraRepository
     }
 
     // Crear una nueva compra
-    public async Task<int> RealizarCompra(
-        string mailComprador,
-        List<EntradaItemDTO> entradas)
+    public async Task<int> RealizarCompra(string mailComprador, List<EntradaItemDTO> entradas)
     {
         using var conn = _db.CreateConnection();
         await conn.OpenAsync();

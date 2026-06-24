@@ -50,6 +50,7 @@ builder.Services.AddScoped<TransferenciaRepository>();
 builder.Services.AddScoped<EquipoRepository>();
 builder.Services.AddScoped<EstadisticasRepository>();
 builder.Services.AddScoped<DispositivoRepository>();
+builder.Services.AddScoped<ValidacionRepository>();
 builder.Services.AddSingleton<JwtService>();
 // builder.Services.AddHostedService<TokenRefreshService>();
 

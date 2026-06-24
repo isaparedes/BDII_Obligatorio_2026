@@ -22,6 +22,12 @@ public class EventoController : ControllerBase
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> CrearEvento([FromBody] CrearEventoDTO dto)
     {
+
+        // Ver si agregar lo de la jurisdicción o dejarselo a la base
+        var fechaHoraEvento = dto.FechaEvento.Date + dto.HoraEvento;
+
+        if (fechaHoraEvento < DateTime.Now)
+            return BadRequest("No se pueden registrar eventos en una fecha y hora pasadas");
         
         if (await _repo.ExisteEvento(dto.FechaEvento, dto.HoraEvento, dto.IdEstadio))
             return BadRequest("Un evento en ese estadio en esa fecha ya está registrado");
@@ -33,12 +39,27 @@ public class EventoController : ControllerBase
 
     [HttpPost("habilitar-sector")]
     [Authorize(Roles = "Administrador")]
-     public async Task<IActionResult> HabilitarSector([FromBody] HabilitarSectorDTO dto)
+    public async Task<IActionResult> HabilitarSector([FromBody] HabilitarSectorDTO dto)
     {
+        var mailAdmin = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (mailAdmin == null)
+            return Unauthorized();
+
+        var paisAdmin = await _repo.ObtenerPaisAdmin(mailAdmin);
+        var paisEvento = await _repo.ObtenerPaisEvento(dto.IdEvento);
+
+        if (paisAdmin != paisEvento)
+            return StatusCode(StatusCodes.Status403Forbidden, "No puede gestionar eventos fuera de su jurisdicción");
+        
+         if (!await _repo.EsEventoPasado(dto.IdEvento))
+            return BadRequest("El evento ya sucedió");
+
         if (await _repo.ExisteHabilitacion(dto.IdEvento, dto.NombreSector))
             return BadRequest("Ese sector ya está habilitado para dicho evento");
 
         await _repo.HabilitarSector(dto);
+
         return Ok("Sector habilitado correctamente");
     }
 
@@ -58,6 +79,15 @@ public class EventoController : ControllerBase
     [Authorize(Roles = "Administrador")]
      public async Task<IActionResult> AsignarFuncionario([FromBody] AsignarFuncionarioDTO dto)
     {
+        if (!await _repo.EsEventoPasado(dto.IdEvento))
+            return BadRequest("El evento ya sucedió");
+
+        if (!await _repo.ExisteFuncionario(dto.MailFuncionario))
+            return BadRequest("El funcionario no existe");
+
+        if (!await _repo.ExisteHabilitacion(dto.IdEvento, dto.NombreSector))
+            return BadRequest("El sector no está habilitado para este evento");
+
         if (await _repo.ExisteAsignacion(dto.IdEvento, dto.NombreSector, dto.MailFuncionario))
             return BadRequest("Ese funcionario ya fue asignado a dicho sector");
 
