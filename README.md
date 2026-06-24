@@ -4,7 +4,7 @@
 ## Instrucciones:
 Ejecución del frontend:
  ```
-open BDD.html
+open index.html
 ```
 
 Ejecución del backend:
