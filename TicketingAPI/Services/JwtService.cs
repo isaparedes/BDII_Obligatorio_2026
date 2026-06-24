@@ -16,16 +16,18 @@ public class JwtService
         _expirationHours = int.Parse(configuration["Jwt:ExpirationHours"]!);
     }
 
-    public string GenerarToken(string mail, string rol)
+    public string GenerarToken(string mail, List<string> roles)
     {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Email, mail)
+        };
+
+        foreach (var rol in roles)
+            claims.Add(new Claim(ClaimTypes.Role, rol));
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.Email, mail),
-            new Claim(ClaimTypes.Role, rol)
-        };
 
         var token = new JwtSecurityToken(
             claims: claims,

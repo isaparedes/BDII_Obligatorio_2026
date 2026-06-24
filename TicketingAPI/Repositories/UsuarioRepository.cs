@@ -95,6 +95,26 @@ public class UsuarioRepository
         );
     }
 
+    // Agregar a un funcionario/administrador un registro de su usuario en usuario_general para que pueda realizar las acciones de este rol también
+    // En UsuarioRepository
+    public async Task AgregarRolGeneral(string mail)
+    {
+        using var conn = _db.CreateConnection();
+
+        var existeUsuarioGeneral = await conn.QueryFirstOrDefaultAsync<int>(
+            "SELECT COUNT(*) FROM usuario_general WHERE mail = @Mail",
+            new { Mail = mail }
+        );
+
+        if (existeUsuarioGeneral > 0)
+            throw new Exception("El usuario ya tiene rol de usuario general");
+
+        await conn.ExecuteAsync(
+            "INSERT INTO usuario_general (mail, estado_verificacion, fecha_registro) VALUES (@Mail, 'Aprobado', CURDATE())",
+            new { Mail = mail }
+        );
+    }
+
     // Obtener un usuario por su mail
     public async Task<Usuario?> ObtenerPorMail(string mail)
     {
@@ -106,29 +126,24 @@ public class UsuarioRepository
     }
 
     // Obtener el rol de un usuario por su mail
-    public async Task<string?> ObtenerRol(string mail)
+    public async Task<List<string>> ObtenerRoles(string mail)
     {
         using var conn = _db.CreateConnection();
+        var roles = new List<string>();
 
         var esAdmin = await conn.QueryFirstOrDefaultAsync<int>(
-            "SELECT COUNT(*) FROM administrador WHERE mail = @Mail",
-            new { Mail = mail }
-        );
-        if (esAdmin > 0) return "Administrador";
+            "SELECT COUNT(*) FROM administrador WHERE mail = @Mail", new { Mail = mail });
+        if (esAdmin > 0) roles.Add("Administrador");
 
         var esFuncionario = await conn.QueryFirstOrDefaultAsync<int>(
-            "SELECT COUNT(*) FROM funcionario WHERE mail = @Mail",
-            new { Mail = mail }
-        );
-        if (esFuncionario > 0) return "Funcionario";
+            "SELECT COUNT(*) FROM funcionario WHERE mail = @Mail", new { Mail = mail });
+        if (esFuncionario > 0) roles.Add("Funcionario");
 
         var esGeneral = await conn.QueryFirstOrDefaultAsync<int>(
-            "SELECT COUNT(*) FROM usuario_general WHERE mail = @Mail",
-            new { Mail = mail }
-        );
-        if (esGeneral > 0) return "UsuarioGeneral";
+            "SELECT COUNT(*) FROM usuario_general WHERE mail = @Mail", new { Mail = mail });
+        if (esGeneral > 0) roles.Add("UsuarioGeneral");
 
-        return null;
+        return roles;
     }
 
     // Validar inicio de sesión de un usuario

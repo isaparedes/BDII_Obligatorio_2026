@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TicketingAPI.DTOs;
 using TicketingAPI.Repositories;
 using TicketingAPI.Services;
@@ -59,6 +60,22 @@ public class UsuarioController : ControllerBase
         return Ok("Funcionario registrado correctamente");
     }
 
+    [HttpPost("agregar-rol-general")]
+    [Authorize(Roles = "Funcionario, Administrador")]
+    public async Task<IActionResult> AgregarRolGeneral()
+    {
+        var mail = User.FindFirst(ClaimTypes.Email)?.Value!;
+        try
+        {
+            await _repo.AgregarRolGeneral(mail);
+            return Ok("Rol de usuario general agregado correctamente");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginDTO dto)
@@ -67,17 +84,17 @@ public class UsuarioController : ControllerBase
         if (!credencialesValidas)
             return Unauthorized("Mail o contraseña incorrectos");
 
-        var rol = await _repo.ObtenerRol(dto.Mail);
-        if (rol == null)
+        var roles = await _repo.ObtenerRoles(dto.Mail);
+        if (roles == null)
             return Unauthorized("Usuario sin rol asignado");
 
-        var token = _jwtService.GenerarToken(dto.Mail, rol);
+        var token = _jwtService.GenerarToken(dto.Mail, roles);
 
         return Ok(new LoginResponseDTO
         {
             Token = token,
             Mail = dto.Mail,
-            Rol = rol
+            Roles = roles
         });
     }
 
