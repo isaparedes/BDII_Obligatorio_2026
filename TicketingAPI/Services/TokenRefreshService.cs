@@ -27,7 +27,7 @@ public class TokenRefreshService : BackgroundService
             Console.WriteLine("Regenerando tokens...");
 
 
-            await repository.RegenerarTokens();
+            // await repository.RegenerarTokens();
 
             await Task.Delay(
                 TimeSpan.FromSeconds(30),
