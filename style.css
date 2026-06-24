@@ -1,0 +1,216 @@
+/*  Colores generales */
+:root {
+    --colorBordeaux: #581845;
+    --colorVerdeOliva: #3f5e4d;
+    --colorGrisFondo: #f4f6f8;
+    --colorGrisTexto: #718096;
+    --colorTextoPrincipal: #2d3748;
+    --colorBlancoMarmol: #ffffff;
+    --bordeSuave: #e2e8f0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--colorGrisFondo);
+    color: var(--colorTextoPrincipal);
+}
+
+/* Barra de navegación */
+.barraNavegacion {
+    background-color: var(--colorBordeaux);
+    color: var(--colorBlancoMarmol);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+}
+
+.logoSistema {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.datosSesion {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btnCerrarSesion {
+    background-color: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Contenedor principal */
+.contenedorPrincipal {
+    max-width: 450px;
+    margin: 30px auto;
+    padding: 0 15px;
+}
+
+/* Visibilidad de las secciones */
+.seccionPantalla {
+    display: none;
+}
+
+.seccionPantalla.activa {
+    display: block;
+}
+
+/* Estilo de las tarjetas */
+.tarjetaContenedor {
+    background-color: var(--colorBlancoMarmol);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid var(--bordeSuave);
+}
+
+.tituloTarjeta {
+    color: var(--colorBordeaux);
+    font-size: 1.25rem;
+    margin-bottom: 5px;
+}
+
+.subtitulo {
+    color: var(--colorGrisTexto);
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+}
+
+/* Campos de formulario */
+.grupoCampo {
+    margin-bottom: 15px;
+}
+
+.grupoCampo label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.grupoCampo input, .grupoCampo select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--bordeSuave);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.pestañasInternas {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.btnPestaña {
+    flex: 1;
+    background-color: #e2e8f0;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 6px;
+    color: var(--colorTextoPrincipal);
+}
+
+.btnPestaña.activa {
+    background-color: var(--colorBordeaux);
+    color: white;
+}
+
+.subVista {
+    display: none;
+}
+
+.subVista.activa {
+    display: block;
+}
+
+.infoPerfil {
+    background-color: #edf2f7;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    border-left: 4px solid var(--colorVerdeOliva);
+}
+
+.infoPerfil p {
+    margin-bottom: 5px;
+}
+
+/* Sección QR */
+.contenedorQr {
+    text-align: center;
+    background-color: #f7fafc;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px dashed var(--bordeSuave);
+}
+
+.recuadroQr {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 10px auto;
+    background-color: white;
+    border: 2px solid var(--colorTextoPrincipal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.textoAlerta {
+    color: #e53e3e;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.bloqueEscaneo {
+    margin-top: 15px;
+    border-top: 1px solid var(--bordeSuave);
+    padding-top: 15px;
+}
+
+.instruccion {
+    font-size: 0.88rem;
+    margin-bottom: 8px;
+}
+
+.inputEscaneo {
+    text-align: center;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 12px !important;
+}
+
+/* Botones */
+.btnAccion {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    color: var(--colorBlancoMarmol);
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.btnBordeaux { background-color: var(--colorBordeaux); }
+.btnVerde { background-color: var(--colorVerdeOliva); }

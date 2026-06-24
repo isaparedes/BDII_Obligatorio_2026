@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticket - Administración</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="barraNavegacion">
+        <div class="logoSistema">UCU Ticket - Admin</div>
+        <div class="datosSesion">
+            <span>Jurisdicción: Uruguay</span>
+            <button onclick="window.location.href='index.html'" class="btnCerrarSesion">Salir</button>
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal" style="max-width: 500px;">
+        
+        <div class="pestañasInternas">
+            <button onclick="cambiarAdminVista('bloqueEstadisticas')" class="btnPestaña activa" id="btnAdminEstadisticas">Estadísticas</button>
+            <button onclick="cambiarAdminVista('bloqueCrear')" class="btnPestaña" id="btnAdminCrear">Crear Evento</button>
+            <button onclick="cambiarAdminVista('bloqueLogistica')" class="btnPestaña" id="btnAdminLogistica">Logística/Eventos</button>
+        </div>
+
+        <div id="bloqueEstadisticas" class="subVista activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Estadísticas y rendimiento</h3>
+                <p class="subtitulo">Métricas del mercado procesadas en tiempo real.</p>
+                
+                <div style="background: #f7fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem;">
+                    <p><strong>Evento con mayor venta de entradas:</strong></p>
+                    <span id="statEventoMasVendido" style="color: var(--colorBordeaux); font-weight: bold; font-size: 1.05rem;">Uruguay vs Portugal</span>
+                </div>
+
+                <div style="background: #f7fafc; padding: 12px; border-radius: 6px; font-size: 0.9rem;">
+                    <p><strong>Mayores compradores registrados:</strong></p>
+                    <ul id="listaMayoresCompradores" style="padding-left: 15px; margin-top: 8px; color: var(--colorGrisTexto); line-height: 1.5;">
+                        <li>isabela.paredes@ucu.edu.uy (14 entradas)</li>
+                        <li>vanesa.carballido@ucu.edu.uy (11 entradas)</li>
+                        <li>josue.merino@ucu.edu.uy (9 entradas)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueCrear" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Crear nuevo evento</h3>
+                <p class="subtitulo">Asignación de infraestructura sin superposición horaria.</p>
+                
+                <form onsubmit="event.preventDefault(); alert('Validando disponibilidad horaria con backend...');">
+                    <div class="grupoCampo">
+                        <label>Nombre del Evento:</label>
+                        <input type="text" placeholder="Ej: Uruguay vs Argentina" required>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Fecha y Hora Planificada:</label>
+                        <input type="datetime-local" required>
+                    </div>
+                    <button type="submit" class="btnAccion btnBordeaux">Dar de alta el evento</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="bloqueLogistica" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Logística de eventos existentes</h3>
+                <p class="subtitulo">Control de accesos y personal parametrizado.</p>
+
+                <div class="grupoCampo">
+                    <label for="selectEventoAdmin">Filtrar por estado y evento:</label>
+                    <select id="selectEventoAdmin" onchange="cambiarEventoLogistica(this.value)">
+                        <optgroup label="ACTUALES (En curso / Hoy)">
+                            <option value="actual">Uruguay vs Portugal</option>
+                        </optgroup>
+                        <optgroup label="FUTUROS (Próximos programados)">
+                            <option value="futuro">Uruguay vs Brasil</option>
+                        </optgroup>
+                        <optgroup label="PASADOS (Historial finalizado)">
+                            <option value="pasado">Peñarol vs Nacional</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div style="background: #edf2f7; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <h4 style="font-size: 0.9rem; color: var(--colorBordeaux); margin-bottom: 5px;">Sectores habilitados</h4>
+                    <div id="contenedorSectores" style="font-size: 0.8rem; margin-bottom: 10px;">
+                        <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector A (VIP)</span>
+                        <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector B (General)</span>
+                    </div>
+                    <button class="btnAccion btnVerde" style="padding: 5px; font-size: 0.75rem; width: auto;" onclick="alert('Configurar nuevo sector')">+ Habilitar sector</button>
+                </div>
+
+                <div style="background: #edf2f7; padding: 12px; border-radius: 6px;">
+                    <h4 style="font-size: 0.9rem; color: var(--colorVerdeOliva); margin-bottom: 5px;">Personal y dispositivos asignados</h4>
+                    
+                    <p style="font-size:0.8rem; margin-bottom: 4px;"><strong>Lista de funcionarios:</strong> <br><span id="listaFuncionariosEventos" style="color:#4a5568; font-weight:bold;">LEG-9924, LEG-1044</span></p>
+                    <p style="font-size:0.8rem; margin-bottom: 10px;"><strong>Dispositivos habilitados:</strong> <br><span id="listaDispositivosEventos" style="color:#4a5568; font-weight:bold;">Handheld-01, Handheld-02</span></p>
+                    
+                    <button class="btnAccion btnBordeaux" style="padding: 5px; font-size: 0.75rem;" onclick="alert('Vincular nuevo funcionario a terminal')">Asignar funcionario y terminal</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function cambiarAdminVista(idBloqueDestino) {
+            const bloques = ['bloqueEstadisticas', 'bloqueCrear', 'bloqueLogistica'];
+            const botones = ['btnAdminEstadisticas', 'btnAdminCrear', 'btnAdminLogistica'];
+            
+            bloques.forEach(b => document.getElementById(b).classList.remove('activa'));
+            botones.forEach(btn => document.getElementById(btn).classList.remove('activa'));
+
+            document.getElementById(idBloqueDestino).classList.add('activa');
+            document.getElementById('btnAdmin' + idBloqueDestino.substring(6)).classList.add('activa');
+        }
+
+        // Simulación de carga de datos desde el back según estado temporal del evento
+        function cambiarEventoLogistica(tipo) {
+            const sectores = document.getElementById('contenedorSectores');
+            const funcionarios = document.getElementById('listaFuncionariosEventos');
+            const dispositivos = document.getElementById('listaDispositivosEventos');
+
+            if(tipo === 'actual') {
+                sectores.innerHTML = '<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector A (VIP)</span> <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector B</span>';
+                funcionarios.innerText = "LEG-9924, LEG-1044";
+                dispositivos.innerText = "Handheld-01, Handheld-02";
+            } else if (tipo === 'futuro') {
+                sectores.innerHTML = '<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Tribuna Olímpica</span> <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Platea América</span>';
+                funcionarios.innerText = "No se han asignado funcionarios aún.";
+                dispositivos.innerText = "No hay terminales vinculadas.";
+            } else if (tipo === 'pasado') {
+                sectores.innerHTML = '<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Todo el Estadio</span>';
+                funcionarios.innerText = "LEG-1122, LEG-8843 (Cerrados)";
+                dispositivos.innerText = "Handheld-09, Handheld-12 (Desvinculados)";
+            }
+        }
+    </script>
+</body>
+</html>
