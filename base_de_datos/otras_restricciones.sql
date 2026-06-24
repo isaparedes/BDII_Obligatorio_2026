@@ -24,33 +24,6 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
--- Habilitación de sectores restringida:
-DELIMITER //
-CREATE TRIGGER trg_admin_solo_habilita_jurisdiccion
-BEFORE INSERT ON habilita
-FOR EACH ROW
-BEGIN
-    DECLARE v_pais_admin VARCHAR(50);
-    DECLARE v_pais_estadio VARCHAR(50);
-    DECLARE v_mail_admin VARCHAR(255);
-
-    SELECT e.mail_admin, es.pais_estadio
-    INTO v_mail_admin, v_pais_estadio
-    FROM evento e
-    JOIN estadio es ON es.id_estadio = NEW.id_estadio
-    WHERE e.id_evento = NEW.id_evento;
-
-    SELECT a.pais_sede
-    INTO v_pais_admin
-    FROM administrador a
-    WHERE a.mail = v_mail_admin;
-
-    IF v_pais_admin <> v_pais_estadio THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El administrador no puede habilitar sectores fuera de su jurisdicción';
-    END IF;
-END //
-DELIMITER ;
 
 -- RNE3: fecha_asignacion de un administrador debe ser menor o igual a la fecha_evento de un evento al que dicho administrador dio de alta.
 DELIMITER //
