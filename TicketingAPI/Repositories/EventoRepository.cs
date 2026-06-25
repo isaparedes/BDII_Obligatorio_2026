@@ -74,7 +74,8 @@ public class EventoRepository
     {
         using var conn = _db.CreateConnection();
         return await conn.QueryAsync<EventoResponseDTO>(@"
-            SELECT ev.fecha_evento, ev.hora_evento,
+            SELECT ev.id_evento AS IdEvento, ev.id_estadio AS IdEstadio,
+            ev.fecha_evento, ev.hora_evento,
             es.nombre_estadio,
             ev.equipo_local, ev.equipo_visitante
             FROM evento ev
@@ -89,7 +90,8 @@ public class EventoRepository
         using var conn = _db.CreateConnection();
 
         return await conn.QueryAsync<EventoResponseDTO>(@"
-            SELECT ev.fecha_evento, ev.hora_evento,
+            SELECT ev.id_evento AS IdEvento, ev.id_estadio AS IdEstadio,
+            ev.fecha_evento, ev.hora_evento,
             es.nombre_estadio,
             ev.equipo_local, ev.equipo_visitante
             FROM evento ev

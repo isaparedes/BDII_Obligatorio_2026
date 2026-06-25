@@ -64,7 +64,7 @@ public class EventoController : ControllerBase
     }
 
     [HttpGet("{idEvento}/sectores-habilitados")]
-    [Authorize(Roles = "Administrador")]
+    [Authorize]
     public async Task<IActionResult> ObtenerSectoresHabilitados(int idEvento)
     {
         var sectores = await _repo.ObtenerSectoresHabilitados(idEvento);

@@ -29,12 +29,35 @@ public class TokenRepository
         if (tokenActivo != null)
             return tokenActivo;
 
+        // Mark any previously active tokens as expired
         await conn.ExecuteAsync(@"
             UPDATE token SET estado_token = 'Expirado'
             WHERE id_entrada = @IdEntrada
             AND estado_token = 'Activo'",
             new { IdEntrada = idEntrada }
         );
+
+        // Keep only the most recent expired token (the "last" one) to avoid filling the DB.
+        // We'll delete any older tokens for this entrada, keeping at most one previous token.
+        var tokens = (await conn.QueryAsync<string>(@"
+            SELECT codigo_qr
+            FROM token
+            WHERE id_entrada = @IdEntrada
+            ORDER BY fecha_hora_vigencia DESC",
+            new { IdEntrada = idEntrada }
+        )).ToList();
+
+        if (tokens.Count > 1)
+        {
+            var keep = tokens[0]; // most recent existing token (previous)
+            var toDelete = tokens.Skip(1).ToArray();
+            await conn.ExecuteAsync(@"
+                DELETE FROM token
+                WHERE id_entrada = @IdEntrada
+                AND codigo_qr IN @ToDelete",
+                new { IdEntrada = idEntrada, ToDelete = toDelete }
+            );
+        }
 
         var ahora = DateTime.Now;
         var codigoQr = Guid.NewGuid().ToString();

@@ -101,7 +101,7 @@ public class CompraRepository
             throw new Exception("El sector no está habilitado para este evento");
 
         var capacidad = await conn.QueryFirstOrDefaultAsync<int>(@"
-            SELECT capacidad_sector
+            SELECT capacidad
             FROM sector
             WHERE id_estadio = @IdEstadio
             AND nombre_sector = @NombreSector",

@@ -20,7 +20,7 @@
     <main class="contenedorPrincipal">
         <div class="pestañasInternas">
             <button onclick="cambiarSubVista('bloqueMisEntradas')" class="btnPestaña activa" id="btnSubMisEntradas">Mis Entradas</button>
-            <button onclick="cambiarSubVista('bloqueComprar')" class="btnPestaña" id="btnSubComprar">Adquirir entrada</button>
+            <button onclick="cambiarSubVista('bloqueComprar')" class="btnPestaña" id="btnSubComprar">Adquirir entradas</button>
             <button onclick="cambiarSubVista('bloqueTransferir')" class="btnPestaña" id="btnSubTransferir">Transferir entrada</button>
             <button onclick="cambiarSubVista('bloqueHistorialTransferencias')" class="btnPestaña" id="btnSubHistorialTransferencias">Historial de transferencias </button>
         </div>
@@ -28,65 +28,63 @@
         <div id="bloqueMisEntradas" class="subVista activa">
             <div class="tarjetaContenedor">
                 <h3 class="tituloTarjeta">Mis entradas activas</h3>
-                <div class="datosEntrada">
-                    <p><strong>Partido:</strong> Uruguay vs Portugal</p>
-                    <p><strong>Sector:</strong> Sector A (VIP)</p>
+                <div id="misEntradasContainer">
+                    <!-- Entradas del usuario se cargarán aquí -->
                 </div>
-                
-                <div class="contenedorQr">
-                    <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
-                    
-                    <div style="font-family: monospace; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">
-                        <span id="tokenQr">GENERANDO...</span>
-                    </div>
-                    <p class="textoAlerta">Cambia en: <span id="contadorTiempo">30</span>s</p>
-                </div>
-                
-                <button class="btnAccion btnVerde" onclick="cambiarSubVista('bloqueTransferir')">Ir a transferir esta entrada</button>
             </div>
         </div>
 
         <div id="bloqueComprar" class="subVista">
             <div class="tarjetaContenedor">
                 <h3 class="tituloTarjeta">Eventos disponibles</h3>
-                <div class="listaEventosFuturos">
-                    <div class="itemEvento" style="border: 1px solid var(--bordeSuave); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
-                        <p><strong>Uruguay vs Brasil</strong></p>
-                        <p class="subtitulo" style="margin-bottom: 5px;">Fecha: 12/10/2026 - Estadio Centenario</p>
-                        <button type="button" class="btnAccion btnBordeaux" style="padding: 6px; font-size: 0.85rem;" onclick="abrirFormularioCompra('Uruguay vs Brasil')">Seleccionar</button>
-                    </div>
+                <div class="listaEventosFuturos" id="listaEventosFuturos">
+                    <!-- Eventos se cargan aquí -->
                 </div>
 
                 <div id="formularioAdquisicion" style="display:none; margin-top: 15px; border-top: 2px dashed var(--bordeSuave); padding-top: 15px;">
                     <h4 id="eventoSeleccionadoCompra" style="color: var(--colorBordeaux); margin-bottom: 10px;"></h4>
-                    <form onsubmit="event.preventDefault(); alert('Compra registrada');">
-                        <div class="grupoCampo">
-                            <label>Cantidad:</label>
-                            <input type="number" min="1" max="5" value="1" required>
-                        </div>
-                        <button type="submit" class="btnAccion btnBordeaux">Confirmar compra</button>
-                    </form>
+                    <div id="sectoresDisponibles">
+                        <!-- Sectores del estadio -->
+                    </div>
+
+                    <h4 style="margin-top:12px;">Carrito</h4>
+                    <div id="resumenCarrito">
+                        <p>No hay items seleccionados.</p>
+                    </div>
+
+                    <div id="mensajeCompra" style="margin-top:8px; color:var(--colorError);"></div>
+
+                    <div style="margin-top:10px; display:flex; gap:8px;">
+                        <button id="btnCrearCompra" class="btnAccion btnBordeaux" style="display:none;">Crear compra</button>
+                        <button id="btnPagarCompra" class="btnAccion btnVerde" style="display:none;">Pagar compra</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="bloqueTransferir" class="subVista">
             <div class="tarjetaContenedor">
-                <h3 class="tituloTarjeta">Transferir entrada activa</h3>
-                <p class="subtitulo">Envía tu entrada digital a otro usuario del sistema de forma irreversible.</p>
-                
-                <div style="background: #edf2f7; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;">
-                    <p><strong>Entrada a transferir:</strong> Uruguay vs Portugal</p>
-                    <p><strong>Ubicación:</strong> Sector A (VIP)</p>
-                </div>
+                <h3 class="tituloTarjeta">Transferir entrada</h3>
+                <p class="subtitulo">Seleccioná una de tus entradas transferibles y enviála a otro usuario.</p>
 
-                <form onsubmit="event.preventDefault(); alert('Solicitud de transferencia enviada al backend.');">
+                <div id="listaEntradasTransferibles" style="margin-bottom:12px;">Cargando...</div>
+
+                <div id="bloqueFormularioTransferencia" style="display:none; border-top:1px dashed var(--bordeSuave); padding-top:10px;">
+                    <h4 style="margin:6px 0;">Entrada a transferir</h4>
+                    <div id="entradaSeleccionadaTexto" style="margin-bottom:8px; font-size:0.95rem;"></div>
+
                     <div class="grupoCampo">
                         <label for="correoDestino">Correo del destinatario:</label>
                         <input type="email" id="correoDestino" required placeholder="ejemplo@ucu.edu.uy">
                     </div>
-                    <button type="submit" class="btnAccion btnBordeaux">Confirmar envío de transferencia</button>
-                </form>
+
+                    <div id="mensajeTransferencia" style="margin-top:8px;color:var(--colorError);"></div>
+
+                    <div style="margin-top:10px; display:flex; gap:8px;">
+                        <button id="btnEnviarTransferencia" class="btnAccion btnBordeaux">Confirmar envío de transferencia</button>
+                        <button class="btnAccion" onclick="(function(){document.getElementById('bloqueFormularioTransferencia').style.display='none';})();">Cancelar</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -113,28 +111,17 @@
     </main>
 
     <script>
-        // Manejo el código QR
-        let qrcodeInstance = null;
+        const API_URL = 'http://localhost:5271/api';
 
-        // Función para generar o actualizar el código QR dinámicamente
-        function actualizarCodigoQR(textoToken) {
-            const contenedorRealQr = document.getElementById("qrcode");
-            
-            // Si ya existe un QR previo se borra 
-            contenedorRealQr.innerHTML = "";
-
-            // Creamos el nuevo QR 
-            qrcodeInstance = new QRCode(contenedorRealQr, {
-                text: textoToken,
-                width: 128,
-                height: 128,
-                colorDark : "#2d3748", 
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+        function getAuthHeaders() {
+            const token = localStorage.getItem('token');
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
         }
 
-        // Función para cambiar de pestañas
+        // Navegación entre sub-vistas
         function cambiarSubVista(idBloqueDestino) {
             const bloques = ['bloqueMisEntradas', 'bloqueComprar', 'bloqueTransferir', 'bloqueHistorialTransferencias'];
             const botones = ['btnSubMisEntradas', 'btnSubComprar', 'btnSubTransferir', 'btnSubHistorialTransferencias'];
@@ -143,41 +130,578 @@
 
             document.getElementById(idBloqueDestino).classList.add('activa');
             document.getElementById('btnSub' + idBloqueDestino.substring(6)).classList.add('activa');
+            if (idBloqueDestino === 'bloqueTransferir') loadEntradasTransferibles();
         }
 
-        function abrirFormularioCompra(nombre) {
-            document.getElementById('formularioAdquisicion').style.display = 'block';
-            document.getElementById('eventoSeleccionadoCompra').innerText = `Comprar: ${nombre}`;
+        // Cargar datos al inicio
+        document.addEventListener('DOMContentLoaded', () => {
+            const mail = localStorage.getItem('mail') || '';
+            document.getElementById('textoUsuarioLogueado').innerText = `${mail} (Cliente)`;
+            loadMisEntradas();
+            loadEventosFuturos();
+            setupCompraButtons();
+        });
+
+        // --- Mis Entradas: obtiene compras del usuario y genera QR por cada entrada ---
+        const displayedEntries = [];
+        let tokenRefreshRunning = false;
+
+        async function loadMisEntradas() {
+            const container = document.getElementById('misEntradasContainer');
+            container.innerHTML = '<p>Cargando...</p>';
+            displayedEntries.length = 0;
+
+            try {
+                const res = await fetch(`${API_URL}/compra/mis-compras`, { headers: getAuthHeaders() });
+                if (!res.ok) throw new Error(await res.text());
+                const compras = await res.json();
+
+                if (!compras || compras.length === 0) {
+                    container.innerHTML = '<p>No hay compras registradas.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                for (const compra of compras) {
+                    const compraDiv = document.createElement('div');
+                    compraDiv.className = 'tarjetaContenedor';
+                    compraDiv.style.marginBottom = '12px';
+
+                    const header = document.createElement('h4');
+                    header.innerText = `Compra #${compra.idCompra}` + ((compra.estadoCompra && compra.estadoCompra !== 'Paga') ? ` — Estado: ${compra.estadoCompra}` : '');
+                    compraDiv.appendChild(header);
+
+                    const list = document.createElement('div');
+                    for (const entrada of compra.entradas || []) {
+                        const item = document.createElement('div');
+                        item.style.borderBottom = '1px solid var(--bordeSuave)';
+                        item.style.padding = '8px 0';
+
+                        const eventInfo = await fetchEvento(entrada.idEvento || entrada.id_evento);
+                        const local = eventInfo ? (eventInfo.equipoLocal || eventInfo.EquipoLocal) : null;
+                        const visitante = eventInfo ? (eventInfo.equipoVisitante || eventInfo.EquipoVisitante) : null;
+                        const estadio = eventInfo ? (eventInfo.nombreEstadio || eventInfo.NombreEstadio) : '';
+                        let fechaStr = '';
+                        if (eventInfo) {
+                            const fecha = new Date(eventInfo.fechaEvento || eventInfo.FechaEvento);
+                            const horaEvento = eventInfo.horaEvento || eventInfo.HoraEvento || '';
+                            const hora = typeof horaEvento === 'string' ? horaEvento.split(':').slice(0, 2).join(':') : horaEvento;
+                            const fechaLocal = fecha.toLocaleDateString();
+                            fechaStr = hora ? `${fechaLocal} ${hora}` : fechaLocal;
+                        }
+
+                        const titulo = (local && visitante) ? `${local} vs ${visitante}` : `Evento #${entrada.idEvento || entrada.id_evento}`;
+                        const sectorNombre = entrada.nombreSector || entrada.nombre_sector || 'Sector';
+                        const costoEntrada = entrada.costoEntrada || entrada.costo_entrada || 0;
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong>${titulo}</strong><br/><small>${fechaStr}${estadio ? ` - ${estadio}` : ''}${fechaStr ? '<br/>' : ''}Sector: ${sectorNombre} — Costo: $${costoEntrada}</small>`;
+                        item.appendChild(p);
+
+                        const qrBox = document.createElement('div');
+                        qrBox.style.width = '120px';
+                        qrBox.style.height = '120px';
+                        qrBox.id = `qr-${entrada.idEntrada || entrada.id_entrada}`;
+                        item.appendChild(qrBox);
+                        list.appendChild(item);
+
+                        displayedEntries.push({ idEntrada: entrada.idEntrada || entrada.id_entrada, qrBox });
+                    }
+
+                    compraDiv.appendChild(list);
+                    container.appendChild(compraDiv);
+                }
+
+                refreshAllTokens();
+            } catch (err) {
+                container.innerHTML = `<p style="color:red;">Error cargando entradas: ${err.message || err}</p>`;
+            }
         }
 
-        // Lógica del token temporal cada 30 segundos
-        let segundosRestantes = 30;
-
-        function ejecutarCicloToken() {
-            // Generar el string de simulación
-            const nuevoToken = "TOKEN-" + Math.random().toString(36).substring(2,6).toUpperCase();
-            
-            // Actualizar el texto del token
-            document.getElementById('tokenQr').innerText = nuevoToken;
-            
-            // Actualizar la imagen del QR de forma sincronizada
-            actualizarCodigoQR(nuevoToken);
+        async function refreshAllTokens() {
+            if (tokenRefreshRunning) return;
+            tokenRefreshRunning = true;
+            try {
+                for (const entry of displayedEntries) {
+                    try {
+                        const res = await fetch(`${API_URL}/token/activo/${entry.idEntrada}`, { headers: getAuthHeaders() });
+                        if (!res.ok) {
+                            entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">No token</div>';
+                            continue;
+                        }
+                        const tokenDto = await res.json();
+                        const code = tokenDto.codigoQR || tokenDto.CodigoQR || tokenDto.codigoQr || tokenDto.codigo_qr || '';
+                        if (!code) {
+                            entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">No token</div>';
+                            continue;
+                        }
+                        entry.qrBox.innerHTML = '';
+                        new QRCode(entry.qrBox, { text: code, width: 120, height: 120 });
+                    } catch {
+                        entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">Error</div>';
+                    }
+                }
+            } finally {
+                tokenRefreshRunning = false;
+            }
         }
-
-        // Ejecutar una vez al cargar la página para que no aparezca vacío el primer ciclo
-        ejecutarCicloToken();
 
         setInterval(() => {
-            if (segundosRestantes <= 0) {
-                segundosRestantes = 30;
-                ejecutarCicloToken();
-            } else { 
-                segundosRestantes--; 
+            if (displayedEntries.length) refreshAllTokens();
+        }, 5000);
+
+        async function fetchEvento(idEvento) {
+            try {
+                const res = await fetch(`${API_URL}/evento/${idEvento}`, { headers: getAuthHeaders() });
+                if (!res.ok) return null;
+                return await res.json();
+            } catch {
+                return null;
             }
-            if (document.getElementById('contadorTiempo')) {
-                document.getElementById('contadorTiempo').innerText = segundosRestantes;
+        }
+
+        // --- Transferir entradas: cargar entradas transferibles, seleccionar y enviar transferencia ---
+        let entradaParaTransferir = null;
+
+        async function loadEntradasTransferibles() {
+            const container = document.getElementById('listaEntradasTransferibles');
+            container.innerHTML = 'Cargando...';
+
+            try {
+                const res = await fetch(`${API_URL}/compra/mis-compras`, { headers: getAuthHeaders() });
+                if (!res.ok) throw new Error(await res.text());
+                const compras = await res.json();
+
+                // recopilar todas las entradas del usuario
+                const entradas = [];
+                for (const c of compras || []) {
+                    for (const e of c.entradas || []) entradas.push(e);
+                }
+
+                // filtrar: no Consumida y evento futuro
+                const items = [];
+                for (const e of entradas) {
+                    if ((e.estadoEntrada || e.estado_entrada || e.estado) === 'Consumida') continue;
+                    const idEv = e.idEvento || e.id_evento;
+                    if (!idEv) continue;
+                    const ev = await fetchEvento(idEv);
+                    if (!ev) continue;
+                    const fechaHora = new Date(ev.fechaEvento || ev.FechaEvento);
+                    // If event has horaEvento, combine
+                    if (ev.horaEvento || ev.HoraEvento) {
+                        const hora = ev.horaEvento || ev.HoraEvento;
+                        // try to parse time if string
+                        const timeStr = typeof hora === 'string' ? hora : hora.toString();
+                        const [hh, mm] = timeStr.split(':').map(x => parseInt(x || '0'));
+                        fechaHora.setHours(hh, mm);
+                    }
+                    if (fechaHora <= new Date()) continue;
+
+                    items.push({ entrada: e, evento: ev });
+                }
+
+                if (!items.length) {
+                    container.innerHTML = '<p>No hay entradas transferibles.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                items.forEach(it => {
+                    const e = it.entrada;
+                    const ev = it.evento;
+                    const div = document.createElement('div');
+                    div.style.padding = '8px';
+                    div.style.borderBottom = '1px solid var(--bordeSuave)';
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'space-between';
+                    div.style.alignItems = 'center';
+
+                    const left = document.createElement('div');
+                    left.innerHTML = `<strong>${(ev.equipoLocal||ev.EquipoLocal)} vs ${(ev.equipoVisitante||ev.EquipoVisitante)}</strong><br/><small>Sector: ${e.nombreSector || e.nombre_sector} — Costo: $${e.costoEntrada || e.costo_entrada}</small>`;
+
+                    const btn = document.createElement('button');
+                    btn.className = 'btnAccion btnBordeaux';
+                    btn.innerText = 'Transferir';
+                    btn.onclick = () => selectEntradaForTransfer(e.idEntrada || e.id_entrada, left.innerText);
+
+                    div.appendChild(left);
+                    div.appendChild(btn);
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                container.innerHTML = `<p style="color:red;">Error cargando entradas transferibles: ${err.message || err}</p>`;
             }
-        }, 1000);
+        }
+
+        function selectEntradaForTransfer(idEntrada, descripcion) {
+            entradaParaTransferir = idEntrada;
+            document.getElementById('entradaSeleccionadaTexto').innerText = descripcion;
+            document.getElementById('bloqueFormularioTransferencia').style.display = 'block';
+            document.getElementById('mensajeTransferencia').innerText = '';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'btnEnviarTransferencia') {
+                e.preventDefault();
+                realizarTransferencia();
+            }
+        });
+
+        async function realizarTransferencia() {
+            const mensaje = document.getElementById('mensajeTransferencia');
+            mensaje.innerText = '';
+            const mail = document.getElementById('correoDestino').value;
+            if (!entradaParaTransferir) { mensaje.innerText = 'Seleccione una entrada primero.'; return; }
+            if (!mail) { mensaje.innerText = 'Ingrese un correo válido.'; return; }
+
+            try {
+                document.getElementById('btnEnviarTransferencia').disabled = true;
+                const res = await fetch(`${API_URL}/transferencia`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ IdEntrada: entradaParaTransferir, MailDestinatario: mail })
+                });
+                const text = await res.text();
+                if (!res.ok) {
+                    mensaje.style.color = 'var(--colorError)';
+                    mensaje.innerText = text;
+                    document.getElementById('btnEnviarTransferencia').disabled = false;
+                    return;
+                }
+
+                // success
+                mensaje.style.color = 'var(--colorVerdeOliva)';
+                mensaje.innerText = text || 'Transferencia creada correctamente.';
+                // refresh lists
+                await loadEntradasTransferibles();
+                await loadMisEntradas();
+                document.getElementById('bloqueFormularioTransferencia').style.display = 'none';
+                document.getElementById('correoDestino').value = '';
+                entradaParaTransferir = null;
+                document.getElementById('btnEnviarTransferencia').disabled = false;
+
+            } catch (err) {
+                mensaje.style.color = 'var(--colorError)';
+                mensaje.innerText = 'Error enviando transferencia: ' + (err.message || err);
+                document.getElementById('btnEnviarTransferencia').disabled = false;
+            }
+        }
+
+        // --- Eventos futuros y compra ---
+        let compraSeleccionada = null;
+        let carrito = [];
+
+        async function loadEventosFuturos() {
+            const list = document.getElementById('listaEventosFuturos');
+            list.innerHTML = '<p>Cargando eventos...</p>';
+            try {
+                const res = await fetch(`${API_URL}/evento/futuros`, { headers: getAuthHeaders() });
+                if (!res.ok) throw new Error(await res.text());
+                const eventos = await res.json();
+                list.innerHTML = '';
+                if (!eventos || eventos.length === 0) {
+                    list.innerHTML = '<p>No hay eventos disponibles.</p>';
+                    return;
+                }
+
+                for (const ev of eventos) {
+                    const item = document.createElement('div');
+                    item.className = 'itemEvento';
+                    item.style.border = '1px solid var(--bordeSuave)';
+                    item.style.padding = '10px';
+                    item.style.borderRadius = '6px';
+                    item.style.marginBottom = '10px';
+
+                    const title = document.createElement('p');
+                    title.innerHTML = `<strong>${ev.equipoLocal} vs ${ev.equipoVisitante}</strong>`;
+                    item.appendChild(title);
+
+                    const subtitle = document.createElement('p');
+                    const fecha = new Date(ev.fechaEvento);
+                    subtitle.className = 'subtitulo';
+                    subtitle.style.marginBottom = '5px';
+                    subtitle.innerText = `Fecha: ${fecha.toLocaleDateString()} ${ev.horaEvento} - ${ev.nombreEstadio}`;
+                    item.appendChild(subtitle);
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btnAccion btnBordeaux';
+                    btn.style.padding = '6px';
+                    btn.style.fontSize = '0.85rem';
+                    btn.innerText = 'Seleccionar';
+                    btn.onclick = () => abrirFormularioCompra(ev);
+                    item.appendChild(btn);
+
+                    list.appendChild(item);
+                }
+
+            } catch (err) {
+                list.innerHTML = `<p style="color:red;">Error cargando eventos: ${err.message || err}</p>`;
+            }
+        }
+
+        function setupCompraButtons() {
+            document.getElementById('btnCrearCompra').addEventListener('click', crearCompra);
+            document.getElementById('btnPagarCompra').addEventListener('click', pagarCompraActual);
+        }
+
+        async function abrirFormularioCompra(ev) {
+            compraSeleccionada = ev;
+            carrito = [];
+            document.getElementById('formularioAdquisicion').style.display = 'block';
+            document.getElementById('eventoSeleccionadoCompra').innerText = `Comprar: ${ev.equipoLocal} vs ${ev.equipoVisitante} — ${ev.nombreEstadio}`;
+
+            // cargar sólo los sectores habilitados para ese evento
+            const sectoresDiv = document.getElementById('sectoresDisponibles');
+            sectoresDiv.innerHTML = '<p>Cargando sectores habilitados...</p>';
+            try {
+                const habilRes = await fetch(`${API_URL}/evento/${ev.idEvento}/sectores-habilitados`, { headers: getAuthHeaders() });
+                if (!habilRes.ok) throw new Error(await habilRes.text());
+                const habilitados = await habilRes.json();
+
+                // obtener lista de nombres habilitados (robusto a campos)
+                const habilNames = (habilitados || []).map(h => h.nombreSector || h.NombreSector || h.nombre_sector || String(h).trim());
+
+                // obtener datos completos de sectores del estadio para sacar costo/capacidad
+                const res = await fetch(`${API_URL}/sector/${ev.idEstadio}`, { headers: getAuthHeaders() });
+                if (!res.ok) throw new Error(await res.text());
+                const sectoresAll = await res.json();
+
+                // filtrar por habilitados
+                const sectores = (sectoresAll || []).filter(s => habilNames.includes(s.nombreSector || s.NombreSector || s.nombre_sector || String(s.NombreSector || s.nombreSector || s.nombre_sector)));
+
+                sectoresDiv.innerHTML = '';
+                if (!sectores.length) {
+                    sectoresDiv.innerHTML = '<p>No hay sectores habilitados para este evento.</p>';
+                }
+
+                for (const s of sectores) {
+                    const nombre = s.nombreSector || s.NombreSector || s.nombre_sector;
+                    const costo = s.costoSector || s.CostoSector || s.costo_sector || 0;
+                    const capacidad = s.capacidad || s.Capacidad || s.capacidad_sector || '';
+
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.style.padding = '6px 0';
+
+                    const info = document.createElement('div');
+                    info.innerHTML = `<strong>${nombre}</strong><br/><small>$${costo} — Capacidad: ${capacidad}</small>`;
+
+                    const controls = document.createElement('div');
+                    controls.style.display = 'flex';
+                    controls.style.gap = '6px';
+
+                    const qty = document.createElement('input');
+                    qty.type = 'number';
+                    qty.min = 0;
+                    qty.max = 5;
+                    qty.value = 0;
+                    qty.style.width = '60px';
+
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'btnAccion';
+                    addBtn.innerText = 'Agregar';
+                    addBtn.onclick = () => {
+                        const cantidad = Math.max(0, Math.min(5, parseInt(qty.value || '0')));
+                        if (cantidad <= 0) {
+                            document.getElementById('mensajeCompra').innerText = 'Ingrese una cantidad válida (1-5)';
+                            return;
+                        }
+                        document.getElementById('mensajeCompra').innerText = '';
+                        agregarAlCarrito(ev.idEvento, ev.idEstadio, nombre, costo, cantidad);
+                    };
+
+                    controls.appendChild(qty);
+                    controls.appendChild(addBtn);
+
+                    row.appendChild(info);
+                    row.appendChild(controls);
+                    sectoresDiv.appendChild(row);
+                }
+
+            } catch (err) {
+                sectoresDiv.innerHTML = `<p style="color:red;">Error cargando sectores habilitados: ${err.message || err}</p>`;
+            }
+            renderCarrito();
+        }
+
+        function agregarAlCarrito(idEvento, idEstadio, nombreSector, costoSector, cantidad) {
+            // agregar o acumular
+            const existing = carrito.find(i => i.nombreSector === nombreSector && i.idEvento === idEvento);
+            if (existing) existing.cantidad = Math.min(5, existing.cantidad + cantidad);
+            else carrito.push({ idEvento, idEstadio, nombreSector, costoSector, cantidad });
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const resumen = document.getElementById('resumenCarrito');
+            resumen.innerHTML = '';
+            if (!carrito.length) {
+                resumen.innerHTML = '<p>No hay items seleccionados.</p>';
+                document.getElementById('btnCrearCompra').style.display = 'none';
+                document.getElementById('btnPagarCompra').style.display = 'none';
+                return;
+            }
+
+            let total = 0;
+            const ul = document.createElement('div');
+            for (let idx = 0; idx < carrito.length; idx++) {
+                const it = carrito[idx];
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.padding = '4px 0';
+
+                const left = document.createElement('div');
+                left.innerText = `${it.nombreSector} x${it.cantidad}`;
+
+                const right = document.createElement('div');
+                right.style.display = 'flex';
+                right.style.gap = '6px';
+                right.style.alignItems = 'center';
+
+                const price = document.createElement('div');
+                price.innerText = `$${it.costoSector * it.cantidad}`;
+
+                const minus = document.createElement('button');
+                minus.className = 'btnAccion';
+                minus.style.padding = '4px';
+                minus.innerText = '-';
+                minus.onclick = () => {
+                    it.cantidad -= 1;
+                    if (it.cantidad <= 0) carrito.splice(idx, 1);
+                    renderCarrito();
+                };
+
+                const plus = document.createElement('button');
+                plus.className = 'btnAccion';
+                plus.style.padding = '4px';
+                plus.innerText = '+';
+                plus.onclick = () => {
+                    if (it.cantidad < 5) it.cantidad += 1;
+                    renderCarrito();
+                };
+
+                const del = document.createElement('button');
+                del.className = 'btnAccion';
+                del.style.padding = '4px';
+                del.style.backgroundColor = '#e53e3e';
+                del.innerText = 'Eliminar';
+                del.onclick = () => { carrito.splice(idx, 1); renderCarrito(); };
+
+                right.appendChild(minus);
+                right.appendChild(plus);
+                right.appendChild(price);
+                right.appendChild(del);
+
+                div.appendChild(left);
+                div.appendChild(right);
+
+                ul.appendChild(div);
+                total += it.costoSector * it.cantidad;
+            }
+
+            const totalDiv = document.createElement('div');
+            totalDiv.style.marginTop = '8px';
+            totalDiv.innerHTML = `<strong>Total: $${total}</strong>`;
+
+            resumen.appendChild(ul);
+            resumen.appendChild(totalDiv);
+
+            document.getElementById('btnCrearCompra').style.display = 'inline-block';
+            // pagar se muestra luego de crear la compra y obtener idCompra
+        }
+
+        // Crear compra: transformamos carrito en Entradas y POST a /api/compra
+        let compraActual = null;
+        async function crearCompra() {
+            if (!carrito.length) return alert('Carrito vacío');
+            const entradas = [];
+            for (const it of carrito) {
+                for (let i = 0; i < it.cantidad; i++) {
+                    entradas.push({ IdEvento: it.idEvento, NombreSector: it.nombreSector });
+                }
+            }
+
+            const mensaje = document.getElementById('mensajeCompra');
+            mensaje.innerText = '';
+            try {
+                document.getElementById('btnCrearCompra').disabled = true;
+                const res = await fetch(`${API_URL}/compra`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ Entradas: entradas })
+                });
+                if (!res.ok) {
+                    const txt = await res.text();
+                    mensaje.innerText = txt;
+                    document.getElementById('btnCrearCompra').disabled = false;
+                    return;
+                }
+                const compra = await res.json();
+                compraActual = compra;
+
+                // calcular subtotal por suma de entradas
+                const subtotal = (compra.entradas || []).reduce((s, e) => s + (e.costoEntrada || e.costo_entrada || 0), 0);
+
+                // mostrar boton pagar
+                document.getElementById('btnPagarCompra').style.display = 'inline-block';
+                document.getElementById('btnCrearCompra').style.display = 'none';
+
+                mensaje.style.color = 'var(--colorVerdeOliva)';
+                mensaje.innerText = `Compra creada (id ${compra.idCompra}). Subtotal: $${subtotal}. Presione Pagar para finalizar.`;
+                document.getElementById('btnCrearCompra').disabled = false;
+
+            } catch (err) {
+                mensaje.style.color = 'var(--colorError)';
+                mensaje.innerText = 'Error creando compra: ' + (err.message || err);
+                document.getElementById('btnCrearCompra').disabled = false;
+            }
+        }
+
+        async function pagarCompraActual() {
+            if (!compraActual) return alert('No hay compra para pagar');
+            const mensaje = document.getElementById('mensajeCompra');
+            mensaje.innerText = '';
+            try {
+                const id = compraActual.idCompra;
+                document.getElementById('btnPagarCompra').disabled = true;
+                const res = await fetch(`${API_URL}/compra/${id}/pagar`, { method: 'PUT', headers: getAuthHeaders() });
+                if (!res.ok) {
+                    const txt = await res.text();
+                    mensaje.style.color = 'var(--colorError)';
+                    mensaje.innerText = txt;
+                    document.getElementById('btnPagarCompra').disabled = false;
+                    return;
+                }
+
+                // obtener compra actualizada
+                const updated = await (await fetch(`${API_URL}/compra/${id}`, { headers: getAuthHeaders() })).json();
+
+                mensaje.style.color = 'var(--colorVerdeOliva)';
+                mensaje.innerText = `Pago registrado. Monto final: $${updated.montoTotal || updated.monto_total || 0}`;
+
+                // recargar mis entradas y volver a vista
+                await loadMisEntradas();
+                cambiarSubVista('bloqueMisEntradas');
+                // limpiar formulario
+                compraSeleccionada = null;
+                carrito = [];
+                compraActual = null;
+                document.getElementById('formularioAdquisicion').style.display = 'none';
+                document.getElementById('btnPagarCompra').style.display = 'none';
+                document.getElementById('btnPagarCompra').disabled = false;
+
+            } catch (err) {
+                mensaje.style.color = 'var(--colorError)';
+                mensaje.innerText = 'Error al pagar: ' + (err.message || err);
+                document.getElementById('btnPagarCompra').disabled = false;
+            }
+        }
     </script>
 </body>
 </html>
