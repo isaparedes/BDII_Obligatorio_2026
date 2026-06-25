@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticket - Portal Integrado</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+    <nav class="barraNavegacion" id="barraNavegacion">
+        <div class="logoSistema">UCU Ticket <span style="font-size: 0.8rem; opacity: 0.8;">(Usuario / Funcionario)</span></div>
+        <div class="datosSesion">
+            <span id="textoUsuarioLogueado">sesion@ucu.edu.uy</span>
+            <button onclick="window.location.href='index.html'" class="btnCerrarSesion" style="margin-left: 15px;">Salir</button>
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        
+        <h2 style="font-size: 1rem; color: var(--colorVerdeOliva); margin-bottom: 5px; border-bottom: 1px solid var(--bordeSuave); padding-bottom: 5px;">Panel de Usuario (Cliente)</h2>
+        <div class="pestañasInternas" style="margin-bottom: 25px;">
+            <button onclick="cambiarSubVista('bloqueMisEntradas')" class="btnPestaña activa" id="btnSubMisEntradas">Mis Entradas</button>
+            <button onclick="cambiarSubVista('bloqueComprar')" class="btnPestaña" id="btnSubComprar">Adquirir entrada</button>
+            <button onclick="cambiarSubVista('bloqueTransferir')" class="btnPestaña" id="btnSubTransferir">Transferir entrada</button>
+            <button onclick="cambiarSubVista('bloqueHistorialTransferencias')" class="btnPestaña" id="btnSubHistorialTransferencias">Historial de transferencias</button>
+        </div>
+
+        <h2 style="font-size: 1rem; color: var(--colorBordeaux); margin-bottom: 5px; border-bottom: 1px solid var(--bordeSuave); padding-bottom: 5px;">Panel Operativo (Funcionario)</h2>
+        <div class="pestañasInternas" style="margin-bottom: 30px;">
+            <button onclick="cambiarFuncionarioVista('bloqueValidacion')" class="btnPestaña" id="btnFuncValidacion">Módulo de Control / Accesos</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed var(--bordeSuave); margin-bottom: 20px;">
+
+
+        <div id="bloqueMisEntradas" class="subVista activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Mis entradas activas</h3>
+                <div class="datosEntrada">
+                    <p><strong>Partido:</strong> Uruguay vs Portugal</p>
+                    <p><strong>Sector:</strong> Sector A (VIP)</p>
+                </div>
+                
+                <div class="contenedorQr">
+                    <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
+                    
+                    <div style="font-family: monospace; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">
+                        <span id="tokenQr">GENERANDO...</span>
+                    </div>
+                    <p class="textoAlerta">Cambia en: <span id="contadorTiempo">30</span>s</p>
+                </div>
+                
+                <button class="btnAccion btnVerde" onclick="cambiarSubVista('bloqueTransferir')">Ir a transferir esta entrada</button>
+            </div>
+        </div>
+
+        <div id="bloqueComprar" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Eventos disponibles</h3>
+                <div class="listaEventosFuturos">
+                    <div class="itemEvento" style="border: 1px solid var(--bordeSuave); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                        <p><strong>Uruguay vs Brasil</strong></p>
+                        <p class="subtitulo" style="margin-bottom: 5px;">Fecha: 12/10/2026 - Estadio Centenario</p>
+                        <button type="button" class="btnAccion btnBordeaux" style="padding: 6px; font-size: 0.85rem;" onclick="abrirFormularioCompra('Uruguay vs Brasil')">Seleccionar</button>
+                    </div>
+                </div>
+
+                <div id="formularioAdquisicion" style="display:none; margin-top: 15px; border-top: 2px dashed var(--bordeSuave); padding-top: 15px;">
+                    <h4 id="eventoSeleccionadoCompra" style="color: var(--colorBordeaux); margin-bottom: 10px;"></h4>
+                    <form onsubmit="event.preventDefault(); alert('Compra registrada');">
+                        <div class="grupoCampo">
+                            <label>Cantidad:</label>
+                            <input type="number" min="1" max="5" value="1" required>
+                        </div>
+                        <button type="submit" class="btnAccion btnBordeaux">Confirmar compra</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueTransferir" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Transferir entrada activa</h3>
+                <p class="subtitulo">Envía tu entrada digital a otro usuario del sistema de forma irreversible.</p>
+                
+                <div style="background: #edf2f7; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;">
+                    <p><strong>Entrada a transferir:</strong> Uruguay vs Portugal</p>
+                    <p><strong>Ubicación:</strong> Sector A (VIP)</p>
+                </div>
+
+                <form onsubmit="event.preventDefault(); alert('Solicitud de transferencia enviada al backend.');">
+                    <div class="grupoCampo">
+                        <label for="correoDestino">Correo del destinatario:</label>
+                        <input type="email" id="correoDestino" required placeholder="ejemplo@ucu.edu.uy">
+                    </div>
+                    <button type="submit" class="btnAccion btnBordeaux">Confirmar envío de transferencia</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="bloqueHistorialTransferencias" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Historial de transferencias</h3>
+                
+                <h4 style="margin: 15px 0 5px 0; font-size: 0.95rem; color: var(--colorVerdeOliva)">Recibidas (Por Aceptar/Rechazar)</h4>
+                <div class="itemTransferencia" style="background: #edf2f7; padding: 10px; border-radius: 6px; border-left: 4px solid gold; margin-bottom: 8px;">
+                    <p style="font-size: 0.85rem;"><strong>De:</strong> carlos@ucu.edu.uy</p>
+                    <p style="font-size: 0.85rem;"><strong>Entrada:</strong> Sector B - Uru vs Por</p>
+                    <div style="display: flex; gap: 5px; margin-top: 8px;">
+                        <button class="btnAccion btnVerde" style="padding: 4px; font-size: 0.8rem;" onclick="alert('Aceptada')">Aceptar</button>
+                        <button class="btnAccion" style="padding: 4px; font-size: 0.8rem; background-color: #e53e3e;" onclick="alert('Rechazada')">Rechazar</button>
+                    </div>
+                </div>
+
+                <h4 style="margin: 15px 0 5px 0; font-size: 0.95rem; color: var(--colorTextoPrincipal)">Enviadas y Estados</h4>
+                <div style="font-size: 0.85rem; padding: 6px; border-bottom: 1px solid var(--bordeSuave);">
+                    <span><strong>Para:</strong> ana@ucu.edu.uy</span> - <b style="color: green;">Aceptada</b>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="bloqueValidacion" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Módulo de Control</h3>
+                <p class="subtitulo">Perfil Operativo - Dispositivo Homologado</p>
+                
+                <div style="background: #f7fafc; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;">
+                    <p><strong>Funcionario Legajo N°:</strong> <span id="legajoFuncionario" style="font-weight: bold; color: var(--colorBordeaux);">LEG-9924</span></p>
+                </div>
+
+                <div style="border-top: 1px solid var(--bordeSuave); padding-top: 15px;">
+                    <p style="font-size: 0.9rem; margin-bottom: 8px; color: var(--colorGrisTexto);">Ingresa el token dinámico o simula el escaneo de cámara:</p>
+                    <div class="grupoCampo">
+                        <input type="text" id="tokenEscaneado" placeholder="Ej: TOKEN-A1B2" style="width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid var(--bordeSuave); border-radius: 4px; font-family: monospace; text-transform: uppercase;">
+                    </div>
+                    <button onclick="simularValidacion()" class="btnAccion btnVerde" style="width: 100%;">Validar entrada</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Manejo del qr
+        let qrcodeInstance = null;
+
+        function actualizarCodigoQR(textoToken) {
+            const contenedorRealQr = document.getElementById("qrcode");
+            if (!contenedorRealQr) return;
+            
+            contenedorRealQr.innerHTML = "";
+            qrcodeInstance = new QRCode(contenedorRealQr, {
+                text: textoToken,
+                width: 128,
+                height: 128,
+                colorDark : "#2d3748", 
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // Pestañas y navegación unificada
+        const todosLosBloques = ['bloqueMisEntradas', 'bloqueComprar', 'bloqueTransferir', 'bloqueHistorialTransferencias', 'bloqueValidacion'];
+        const todosLosBotones = ['btnSubMisEntradas', 'btnSubComprar', 'btnSubTransferir', 'btnSubHistorialTransferencias', 'btnFuncValidacion'];
+
+        function limpiarVistasYBotones() {
+            todosLosBloques.forEach(b => {
+                const el = document.getElementById(b);
+                if(el) el.classList.remove('activa');
+            });
+            todosLosBotones.forEach(btn => {
+                const el = document.getElementById(btn);
+                if(el) el.classList.remove('activa');
+            });
+        }
+
+        // Pestañas del Cliente
+        function cambiarSubVista(idBloqueDestino) {
+            limpiarVistasYBotones();
+            document.getElementById(idBloqueDestino).classList.add('activa');
+            document.getElementById('btnSub' + idBloqueDestino.substring(6)).classList.add('activa');
+        }
+
+        // Pestañas del Funcionario
+        function cambiarFuncionarioVista(idBloqueDestino) {
+            limpiarVistasYBotones();
+            document.getElementById(idBloqueDestino).classList.add('activa');
+            document.getElementById('btnFunc' + idBloqueDestino.substring(6)).classList.add('activa');
+        }
+
+        // acciones usuario
+        function abrirFormularioCompra(nombre) {
+            document.getElementById('formularioAdquisicion').style.display = 'block';
+            document.getElementById('eventoSeleccionadoCompra').innerText = `Comprar: ${nombre}`;
+        }
+
+        // acciones funcionario
+        function simularValidacion() {
+            const tokenInput = document.getElementById('tokenEscaneado');
+            if(!tokenInput || !tokenInput.value) return alert('Ingresa un token válido');
+            
+            alert(`Token [${tokenInput.value.toUpperCase()}] verificado. Estado: CONSUMIDO en BDD.`);
+            tokenInput.value = '';
+        }
+
+        // lógica del token QR que se renueva cada 30 segundos
+        let segundosRestantes = 30;
+
+        function ejecutarCicloToken() {
+            const nuevoToken = "TOKEN-" + Math.random().toString(36).substring(2,6).toUpperCase();
+            const elToken = document.getElementById('tokenQr');
+            if(elToken) {
+                elToken.innerText = nuevoToken;
+                actualizarCodigoQR(nuevoToken);
+            }
+        }
+
+        // Ejecución inicial al cargar
+        ejecutarCicloToken();
+
+        setInterval(() => {
+            if (segundosRestantes <= 0) {
+                segundosRestantes = 30;
+                ejecutarCicloToken();
+            } else { 
+                segundosRestantes--; 
+            }
+            const elContador = document.getElementById('contadorTiempo');
+            if (elContador) {
+                elContador.innerText = segundosRestantes;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

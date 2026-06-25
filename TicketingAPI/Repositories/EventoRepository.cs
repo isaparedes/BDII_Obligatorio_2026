@@ -73,8 +73,13 @@ public class EventoRepository
     public async Task<IEnumerable<EventoResponseDTO>> ObtenerTodos()
     {
         using var conn = _db.CreateConnection();
-        return await conn.QueryAsync<EventoResponseDTO>(
-            "SELECT * FROM evento"
+        return await conn.QueryAsync<EventoResponseDTO>(@"
+            SELECT ev.fecha_evento, ev.hora_evento,
+            es.nombre_estadio,
+            ev.equipo_local, ev.equipo_visitante
+            FROM evento ev
+            JOIN estadio es
+            ON ev.id_estadio = es.id_estadio"
         );
     }  
 
@@ -84,9 +89,13 @@ public class EventoRepository
         using var conn = _db.CreateConnection();
 
         return await conn.QueryAsync<EventoResponseDTO>(@"
-            SELECT * FROM evento
-            WHERE 
-            fecha_evento > CURDATE()
+            SELECT ev.fecha_evento, ev.hora_evento,
+            es.nombre_estadio,
+            ev.equipo_local, ev.equipo_visitante
+            FROM evento ev
+            JOIN estadio es
+            ON ev.id_estadio = es.id_estadio
+            WHERE fecha_evento > CURDATE()
             OR (fecha_evento = CURDATE() AND hora_evento >= CURTIME())
         ");
     }

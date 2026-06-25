@@ -48,6 +48,19 @@
     <script>
         const API_URL = 'http://localhost:5271/api';
 
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+
+            return JSON.parse(jsonPayload);
+        }
+
         async function iniciarSesion(event) {
             event.preventDefault();
 
@@ -74,18 +87,43 @@
 
                 const data = await response.json();
 
-                // Guardar token y datos del usuario
+                // guardar token
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('mail', data.mail);
-                localStorage.setItem('rol', data.rol);
 
-                // Redirigir según rol
-                if (data.roles && data.roles.includes('Administrador')) {
-                    window.location.href = 'administrador.html';
-                } else if (data.roles && data.roles.includes('Funcionario')) {
-                    window.location.href = 'funcionario.html';
-                } else {
-                    window.location.href = 'usuario.html';
+                // 🔥 decodificar token
+                const payload = parseJwt(data.token);
+
+                // roles vienen en claim estándar
+                let roles = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+                // normalizar a array
+                if (!Array.isArray(roles)) {
+                    roles = roles ? [roles] : [];
+                }
+
+                // flags
+                const isAdmin = roles.includes("Administrador");
+                const isFuncionario = roles.includes("Funcionario");
+                const isUser = roles.includes("UsuarioGeneral");
+
+                // guardar mail si querés
+                localStorage.setItem('mail', payload["email"] || payload["sub"] || "");
+
+                // 🔀 redirección lógica
+                if (isAdmin && isUser) {
+                    window.location.href = "usuarioAdmin.html";
+                }
+                else if (isFuncionario && isUser) {
+                    window.location.href = "usuarioFuncionario.html";
+                }
+                else if (isAdmin) {
+                    window.location.href = "administrador.html";
+                }
+                else if (isFuncionario) {
+                    window.location.href = "funcionario.html";
+                }
+                else {
+                    window.location.href = "usuario.html";
                 }
 
             } catch (error) {
