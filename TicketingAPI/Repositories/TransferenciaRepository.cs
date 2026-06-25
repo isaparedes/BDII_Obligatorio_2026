@@ -30,8 +30,10 @@ public class TransferenciaRepository
             { dto.IdEntrada }
         );
 
-        var entrada = await conn.QueryFirstOrDefaultAsync<Entrada>(
-            "SELECT * FROM entrada WHERE id_entrada = @IdEntrada",
+        var entrada = await conn.QueryFirstOrDefaultAsync<Entrada>(@"
+            SELECT * 
+            FROM entrada 
+            WHERE id_entrada = @IdEntrada",
             new { dto.IdEntrada }
         );
 
@@ -41,18 +43,44 @@ public class TransferenciaRepository
         if (entrada.MailTitular != mailRemitente)
             throw new Exception("No eres el dueño de la entrada");
 
+        if (entrada.EstadoEntrada == "Consumida")
+            throw new Exception("La entrada ya fue consumida");
+
+        var evento = await conn.QueryFirstOrDefaultAsync<Evento>(@"
+            SELECT e.fecha_evento, e.hora_evento
+            FROM entrada en
+            JOIN evento e ON e.id_evento = en.id_evento
+            WHERE en.id_entrada = @IdEntrada",
+            new { dto.IdEntrada }
+        );
+
+        var fechaEvento = evento.FechaEvento.Date.Add(evento.HoraEvento);
+
+        if (fechaEvento <= DateTime.Now)
+            throw new Exception("No se puede transferir una entrada de un evento pasado");
 
         if (existeTransferencia != 0)
             throw new Exception("Ya existe una transferencia en proceso con dicha entrada");
-        
 
-        var existeUsuario = await conn.QueryFirstOrDefaultAsync<int>(
-            "SELECT COUNT(*) FROM usuario WHERE mail = @Mail",
+        var existeUsuario = await conn.QueryFirstOrDefaultAsync<int>(@"
+            SELECT COUNT(*) 
+            FROM usuario 
+            WHERE mail = @Mail",
             new { Mail = dto.MailDestinatario }
         );
 
         if (existeUsuario == 0)
             throw new Exception("El destinatario no existe");
+
+        var cantidadTransferencias = await conn.QueryFirstOrDefaultAsync<int>(@"
+            SELECT COUNT(*)
+            FROM transferencia
+            WHERE id_entrada = @IdEntrada",
+            new { dto.IdEntrada }
+        );
+
+        if (cantidadTransferencias >= 3)
+            throw new Exception("Se alcanzó el máximo de transferencias permitidas para esta entrada");
 
         return await conn.QueryFirstOrDefaultAsync<int>(@"
             INSERT INTO transferencia 

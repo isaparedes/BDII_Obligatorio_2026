@@ -174,11 +174,6 @@ public class EventoRepository
         );
     }
 
-    // Obtener capacidad del sector antes de validar compra 
-    // public Task<int> ObtenerCapacidadSector()
-    // Obtener entradas vendidas para un sector en un evento 
-    // public Task<int> ObtenerEntradasVendidas()
-
     // Averiguar si un funcionario ya fue asignado a un sector para cierto evento
     public async Task<bool> ExisteAsignacion(int idEvento, string nombreSector, string mailFuncionario)
     {

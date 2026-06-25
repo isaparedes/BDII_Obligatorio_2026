@@ -12,9 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// ======================
-// SWAGGER CONFIG
-// ======================
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -43,9 +40,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ======================
-// DEPENDENCY INJECTION
-// ======================
 builder.Services.AddSingleton<DatabaseConnection>();
 
 builder.Services.AddScoped<UsuarioRepository>();
@@ -63,10 +57,6 @@ builder.Services.AddScoped<DispositivoRepository>();
 builder.Services.AddScoped<ValidacionRepository>();
 
 builder.Services.AddSingleton<JwtService>();
-
-// ======================
-// CORS (AGREGADO)
-// ======================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -78,9 +68,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ======================
-// JWT CONFIG
-// ======================
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
@@ -101,9 +88,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-// ======================
-// PIPELINE
-// ======================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -111,13 +95,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// 👇 CORS VA ACÁ (IMPORTANTE)
 app.UseCors("Frontend");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

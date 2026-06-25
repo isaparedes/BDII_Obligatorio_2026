@@ -96,7 +96,6 @@ public class UsuarioRepository
     }
 
     // Agregar a un funcionario/administrador un registro de su usuario en usuario_general para que pueda realizar las acciones de este rol también
-    // En UsuarioRepository
     public async Task AgregarRolGeneral(string mail)
     {
         using var conn = _db.CreateConnection();

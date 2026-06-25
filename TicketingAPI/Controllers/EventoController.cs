@@ -52,7 +52,7 @@ public class EventoController : ControllerBase
         if (paisAdmin != paisEvento)
             return StatusCode(StatusCodes.Status403Forbidden, "No puede gestionar eventos fuera de su jurisdicción");
         
-         if (!await _repo.EsEventoPasado(dto.IdEvento))
+         if (await _repo.EsEventoPasado(dto.IdEvento))
             return BadRequest("El evento ya sucedió");
 
         if (await _repo.ExisteHabilitacion(dto.IdEvento, dto.NombreSector))
