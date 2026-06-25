@@ -33,6 +33,8 @@
                             <option value="usuarioGeneral">Usuario General</option>
                             <option value="funcionarioValidacion">Funcionario </option>
                             <option value="administradorSede">Administrador </option>
+                             <option value="usuarioAdmin">Administrador y usuario general </option>
+                              <option value="usuarioFuncionario">Funcionario y usuario general </option>
                         </select>
                     </div>
 
@@ -53,7 +55,13 @@
             } else if (rolElegido === 'funcionarioValidacion') {
                 window.location.href = 'funcionario.html';
             } else if (rolElegido === 'administradorSede') {
-                window.location.href = 'administrador.html';
+                window.location.href = 'administrador.html'; 
+            }
+            else if (rolElegido === 'usuarioAdmin') {
+                window.location.href = 'usuarioAdmin.html';
+            }
+            else if (rolElegido === 'usuarioFuncionario') {
+                window.location.href = 'usuarioFuncionario.html';
             }
         }
     </script>
