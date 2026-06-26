@@ -11,7 +11,6 @@
     <nav class="barraNavegacion">
         <div class="logoSistema">UCU Ticket - Admin</div>
         <div class="datosSesion">
-            <span>Jurisdicción: Uruguay</span>
             <button onclick="window.location.href='index.html'" class="btnCerrarSesion">Salir</button>
         </div>
     </nav>
@@ -30,17 +29,13 @@
                 <p class="subtitulo">Métricas del mercado procesadas en tiempo real.</p>
                 
                 <div style="background: #f7fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem;">
-                    <p><strong>Evento con mayor venta de entradas:</strong></p>
-                    <span id="statEventoMasVendido" style="color: var(--colorBordeaux); font-weight: bold; font-size: 1.05rem;">Uruguay vs Portugal</span>
+                    <p><strong>Top 10: Eventos con mayor venta de entradas</strong></p>
+                    <div id="estadisticasEventosMasVendidos" style="margin-top: 10px; color: var(--colorGrisTexto);"></div>
                 </div>
 
                 <div style="background: #f7fafc; padding: 12px; border-radius: 6px; font-size: 0.9rem;">
-                    <p><strong>Mayores compradores registrados:</strong></p>
-                    <ul id="listaMayoresCompradores" style="padding-left: 15px; margin-top: 8px; color: var(--colorGrisTexto); line-height: 1.5;">
-                        <li>isabela.paredes@ucu.edu.uy (14 entradas)</li>
-                        <li>vanesa.carballido@ucu.edu.uy (11 entradas)</li>
-                        <li>josue.merino@ucu.edu.uy (9 entradas)</li>
-                    </ul>
+                    <p><strong>Top 5: Mayores compradores</strong></p>
+                    <div id="estadisticasMayoresCompradores" style="margin-top: 10px; color: var(--colorGrisTexto);"></div>
                 </div>
             </div>
         </div>
@@ -49,16 +44,35 @@
             <div class="tarjetaContenedor">
                 <h3 class="tituloTarjeta">Crear nuevo evento</h3>
                 <p class="subtitulo">Asignación de infraestructura sin superposición horaria.</p>
-                
-                <form onsubmit="event.preventDefault(); alert('Validando disponibilidad horaria con backend...');">
+
+                <form id="formCrearEvento" onsubmit="event.preventDefault(); crearEvento();">
                     <div class="grupoCampo">
-                        <label>Nombre del Evento:</label>
-                        <input type="text" placeholder="Ej: Uruguay vs Argentina" required>
+                        <label>Estadio:</label>
+                        <select id="selectEstadio" required>
+                            <option value="">Cargando estadios...</option>
+                        </select>
                     </div>
                     <div class="grupoCampo">
-                        <label>Fecha y Hora Planificada:</label>
-                        <input type="datetime-local" required>
+                        <label>Equipo local:</label>
+                        <select id="selectEquipoLocal" required>
+                            <option value="">Cargando equipos...</option>
+                        </select>
                     </div>
+                    <div class="grupoCampo">
+                        <label>Equipo visitante:</label>
+                        <select id="selectEquipoVisitante" required>
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Fecha del evento:</label>
+                        <input id="inputFechaEvento" type="date" required>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Hora del evento:</label>
+                        <input id="inputHoraEvento" type="time" required>
+                    </div>
+                    <div id="mensajeCrearEvento" style="color: var(--colorBordeaux); margin-bottom: 8px;"></div>
                     <button type="submit" class="btnAccion btnBordeaux">Dar de alta el evento</button>
                 </form>
             </div>
@@ -70,36 +84,49 @@
                 <p class="subtitulo">Control de accesos y personal parametrizado.</p>
 
                 <div class="grupoCampo">
-                    <label for="selectEventoAdmin">Filtrar por estado y evento:</label>
+                    <label for="selectEventoAdmin">Seleccionar evento:</label>
                     <select id="selectEventoAdmin" onchange="cambiarEventoLogistica(this.value)">
-                        <optgroup label="ACTUALES (En curso / Hoy)">
-                            <option value="actual">Uruguay vs Portugal</option>
-                        </optgroup>
-                        <optgroup label="FUTUROS (Próximos programados)">
-                            <option value="futuro">Uruguay vs Brasil</option>
-                        </optgroup>
-                        <optgroup label="PASADOS (Historial finalizado)">
-                            <option value="pasado">Peñarol vs Nacional</option>
-                        </optgroup>
+                        <option value="">Cargando eventos futuros...</option>
                     </select>
                 </div>
 
                 <div style="background: #edf2f7; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
                     <h4 style="font-size: 0.9rem; color: var(--colorBordeaux); margin-bottom: 5px;">Sectores habilitados</h4>
-                    <div id="contenedorSectores" style="font-size: 0.8rem; margin-bottom: 10px;">
-                        <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector A (VIP)</span>
-                        <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector B (General)</span>
-                    </div>
-                    <button class="btnAccion btnVerde" style="padding: 5px; font-size: 0.75rem; width: auto;" onclick="alert('Configurar nuevo sector')">+ Habilitar sector</button>
+                    <div id="contenedorSectores" style="font-size: 0.8rem; margin-bottom: 10px;">Seleccione un evento para ver sectores habilitados.</div>
+
+                    <form id="formHabilitarSector" onsubmit="event.preventDefault(); habilitarSector();" style="display:flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex:1; min-width: 180px;">
+                            <label>Nombre del sector:</label>
+                            <input id="inputNuevoSector" type="text" placeholder="Ej: Tribuna Norte" required>
+                        </div>
+                        <button type="submit" class="btnAccion btnVerde" style="padding: 8px 12px;">+ Habilitar sector</button>
+                    </form>
+                    <div id="mensajeHabilitarSector" style="color: var(--colorBordeaux); margin-top: 8px;"></div>
+                </div>
+
+                <div style="background: #edf2f7; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <h4 style="font-size: 0.9rem; color: var(--colorVerdeOliva); margin-bottom: 5px;">Funcionarios asignados</h4>
+                    <div id="contenedorFuncionarios" style="font-size: 0.8rem; margin-bottom: 10px;">Seleccione un evento para ver funcionarios asignados.</div>
+
+                    <form id="formAsignarFuncionario" onsubmit="event.preventDefault(); asignarFuncionario();" style="display:flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex:1; min-width: 180px;">
+                            <label>Sector habilitado:</label>
+                            <select id="selectSectorAsignar" required>
+                                <option value="">Seleccione un evento primero</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width: 180px;">
+                            <label>Email del funcionario:</label>
+                            <input id="inputMailFuncionario" type="email" placeholder="funcionario@ucu.edu.uy" required>
+                        </div>
+                        <button type="submit" class="btnAccion btnBordeaux" style="padding: 8px 12px;">Asignar funcionario</button>
+                    </form>
+                    <div id="mensajeAsignarFuncionario" style="color: var(--colorBordeaux); margin-top: 8px;"></div>
                 </div>
 
                 <div style="background: #edf2f7; padding: 12px; border-radius: 6px;">
-                    <h4 style="font-size: 0.9rem; color: var(--colorVerdeOliva); margin-bottom: 5px;">Personal y dispositivos asignados</h4>
-                    
-                    <p style="font-size:0.8rem; margin-bottom: 4px;"><strong>Lista de funcionarios:</strong> <br><span id="listaFuncionariosEventos" style="color:#4a5568; font-weight:bold;">LEG-9924, LEG-1044</span></p>
-                    <p style="font-size:0.8rem; margin-bottom: 10px;"><strong>Dispositivos habilitados:</strong> <br><span id="listaDispositivosEventos" style="color:#4a5568; font-weight:bold;">Handheld-01, Handheld-02</span></p>
-                    
-                    <button class="btnAccion btnBordeaux" style="padding: 5px; font-size: 0.75rem;" onclick="alert('Vincular nuevo funcionario a terminal')">Asignar funcionario y terminal</button>
+                    <h4 style="font-size: 0.9rem; color: var(--colorBordeaux); margin-bottom: 5px;">Dispositivos habilitados</h4>
+                    <div id="contenedorDispositivos" style="font-size: 0.8rem; margin-bottom: 10px;">Seleccione un evento para ver dispositivos habilitados.</div>
                 </div>
             </div>
         </div>
@@ -107,10 +134,27 @@
     </main>
 
     <script>
+        const API_URL = 'http://localhost:5271/api';
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+            return headers;
+        }
+
+        function ensureAdminLoggedIn() {
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'index.html';
+            }
+        }
+
         function cambiarAdminVista(idBloqueDestino) {
             const bloques = ['bloqueEstadisticas', 'bloqueCrear', 'bloqueLogistica'];
             const botones = ['btnAdminEstadisticas', 'btnAdminCrear', 'btnAdminLogistica'];
-            
+
             bloques.forEach(b => document.getElementById(b).classList.remove('activa'));
             botones.forEach(btn => document.getElementById(btn).classList.remove('activa'));
 
@@ -118,26 +162,372 @@
             document.getElementById('btnAdmin' + idBloqueDestino.substring(6)).classList.add('activa');
         }
 
-        // Simulación de carga de datos desde el back según estado temporal del evento
-        function cambiarEventoLogistica(tipo) {
-            const sectores = document.getElementById('contenedorSectores');
-            const funcionarios = document.getElementById('listaFuncionariosEventos');
-            const dispositivos = document.getElementById('listaDispositivosEventos');
+        async function loadEstadisticas() {
+            const eventosContainer = document.getElementById('estadisticasEventosMasVendidos');
+            const compradoresContainer = document.getElementById('estadisticasMayoresCompradores');
+            eventosContainer.innerHTML = '<p>Cargando eventos...</p>';
+            compradoresContainer.innerHTML = '<p>Cargando compradores...</p>';
 
-            if(tipo === 'actual') {
-                sectores.innerHTML = '<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector A (VIP)</span> <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Sector B</span>';
-                funcionarios.innerText = "LEG-9924, LEG-1044";
-                dispositivos.innerText = "Handheld-01, Handheld-02";
-            } else if (tipo === 'futuro') {
-                sectores.innerHTML = '<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Tribuna Olímpica</span> <span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Platea América</span>';
-                funcionarios.innerText = "No se han asignado funcionarios aún.";
-                dispositivos.innerText = "No hay terminales vinculadas.";
-            } else if (tipo === 'pasado') {
-                sectores.innerHTML = '<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">Todo el Estadio</span>';
-                funcionarios.innerText = "LEG-1122, LEG-8843 (Cerrados)";
-                dispositivos.innerText = "Handheld-09, Handheld-12 (Desvinculados)";
+            try {
+                const [evRes, cRes] = await Promise.all([
+                    fetch(`${API_URL}/estadisticas/eventos-mas-vendidos`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/estadisticas/mayores-compradores`, { headers: getAuthHeaders() })
+                ]);
+
+                if (evRes.ok) {
+                    const eventos = await evRes.json();
+                    eventosContainer.innerHTML = eventos.length > 0 ? `
+                        <table class="tablaEstadisticas">
+                            <thead><tr><th>Evento</th><th>Estadio</th><th>Fecha</th><th>Entradas</th></tr></thead>
+                            <tbody>
+                                ${eventos.map(ev => {
+                                    const fechaObj = new Date(ev.fechaEvento);
+
+                                    const fecha = fechaObj.toLocaleDateString("es-UY");
+                                    const hora = fechaObj.toLocaleTimeString("es-UY", {
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    });
+
+                                    return `
+                                        <tr>
+                                            <td>${ev.equipoLocal} vs ${ev.equipoVisitante}</td>
+                                            <td>${ev.nombreEstadio}</td>
+                                            <td>${fecha} ${hora}</td>
+                                            <td>${(ev.totalEntradasVendidas ?? ev.totalEntradas) || 0}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>` : '<p>No hay datos de ventas disponibles.</p>';
+                } else {
+                    eventosContainer.innerHTML = '<p>No autorizado o sin datos</p>';
+                }
+
+                if (cRes.ok) {
+                    const compradores = await cRes.json();
+                    compradoresContainer.innerHTML = compradores.length > 0 ? `
+                        <table class="tablaEstadisticas">
+                            <thead><tr><th>Cliente</th><th>Entradas</th><th>Compras</th><th>Gasto</th></tr></thead>
+                            <tbody>${compradores.map(c => `<tr><td>${c.mailComprador || c.mail}</td><td>${c.totalEntradas}</td><td>${c.totalCompras}</td><td>$${c.gastoTotal ?? c.totalGastado ?? 0}</td></tr>`).join('')}</tbody>
+                        </table>` : '<p>No hay compradores registrados.</p>';
+                } else {
+                    compradoresContainer.innerHTML = '<p>No autorizado o sin datos</p>';
+                }
+            } catch (error) {
+                eventosContainer.innerHTML = '<p>Error cargando datos de estadísticas.</p>';
+                compradoresContainer.innerHTML = '<p>Error cargando datos de estadísticas.</p>';
             }
         }
+
+        async function loadEquipos() {
+            const localSelect = document.getElementById('selectEquipoLocal');
+            const visitanteSelect = document.getElementById('selectEquipoVisitante');
+            localSelect.innerHTML = '<option value="">Cargando equipos...</option>';
+            visitanteSelect.innerHTML = '<option value="">Cargando equipos...</option>';
+
+            try {
+                const res = await fetch(`${API_URL}/equipo`, { headers: getAuthHeaders() });
+                if (!res.ok) {
+                    throw new Error('Error cargando equipos');
+                }
+                const equipos = await res.json();
+                if (!equipos || equipos.length === 0) {
+                    localSelect.innerHTML = '<option value="">No hay equipos</option>';
+                    visitanteSelect.innerHTML = '<option value="">No hay equipos</option>';
+                    return;
+                }
+                localSelect.innerHTML = '<option value="">Seleccione un equipo local</option>';
+                visitanteSelect.innerHTML = '<option value="">Seleccione un equipo visitante</option>';
+                equipos.forEach(eq => {
+                    const name = eq.nombreEquipo || eq.nombre || '';
+                    const optionLocal = document.createElement('option');
+                    optionLocal.value = name;
+                    optionLocal.innerText = name;
+                    localSelect.appendChild(optionLocal);
+                    const optionVisitante = optionLocal.cloneNode(true);
+                    visitanteSelect.appendChild(optionVisitante);
+                });
+            } catch (error) {
+                localSelect.innerHTML = '<option value="">Error cargando equipos</option>';
+                visitanteSelect.innerHTML = '<option value="">Error cargando equipos</option>';
+            }
+        }
+
+        async function loadEstadios() {
+            const estadioSelect = document.getElementById('selectEstadio');
+            estadioSelect.innerHTML = '<option value="">Cargando estadios...</option>';
+
+            try {
+                const res = await fetch(`${API_URL}/estadio`, { headers: getAuthHeaders() });
+                if (!res.ok) {
+                    throw new Error('Error cargando estadios');
+                }
+                const estadios = await res.json();
+                if (!estadios || estadios.length === 0) {
+                    estadioSelect.innerHTML = '<option value="">No hay estadios disponibles</option>';
+                    return;
+                }
+                estadioSelect.innerHTML = '<option value="">Seleccione un estadio</option>';
+                estadios.forEach(est => {
+                    const option = document.createElement('option');
+                    option.value = est.idEstadio ?? est.id ?? '';
+                    option.innerText = `${est.nombreEstadio || est.nombre || ''} (${est.paisEstadio || est.pais || 'N/A'})`;
+                    estadioSelect.appendChild(option);
+                });
+            } catch (error) {
+                estadioSelect.innerHTML = '<option value="">Error cargando estadios</option>';
+            }
+        }
+
+        async function loadEventosAdmin() {
+            const select = document.getElementById('selectEventoAdmin');
+            select.innerHTML = '<option value="">Cargando eventos futuros...</option>';
+            try {
+                const res = await fetch(`${API_URL}/evento/futuros`, { headers: getAuthHeaders() });
+                if (!res.ok) {
+                    throw new Error('Error cargando eventos');
+                }
+                const eventos = await res.json();
+                if (!eventos || eventos.length === 0) {
+                    select.innerHTML = '<option value="">No hay eventos próximos</option>';
+                    clearLogistica();
+                    return;
+                }
+                select.innerHTML = '<option value="">Seleccione un evento</option>';
+                eventos.forEach(ev => {
+                    const date = ev.fechaEvento || (ev.fecha ? ev.fecha.split('T')[0] : '');
+                    const hora = ev.horaEvento || (ev.fecha ? new Date(ev.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+                    const option = document.createElement('option');
+                    option.value = ev.idEvento ?? ev.id;
+                    option.innerText = `${ev.equipoLocal} vs ${ev.equipoVisitante} — ${ev.nombreEstadio} (${date} ${hora})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                select.innerHTML = '<option value="">Error cargando eventos</option>';
+            }
+        }
+
+        function clearLogistica() {
+            document.getElementById('contenedorSectores').innerHTML = 'Seleccione un evento para ver sectores habilitados.';
+            document.getElementById('contenedorFuncionarios').innerHTML = 'Seleccione un evento para ver funcionarios asignados.';
+            document.getElementById('contenedorDispositivos').innerHTML = 'Seleccione un evento para ver dispositivos habilitados.';
+            document.getElementById('selectSectorAsignar').innerHTML = '<option value="">Seleccione un evento primero</option>';
+        }
+
+        async function cambiarEventoLogistica(idEvento) {
+            const eventoId = parseInt(idEvento, 10);
+            if (!eventoId) {
+                clearLogistica();
+                return;
+            }
+            await loadLogisticaForEvent(eventoId);
+        }
+
+        async function loadLogisticaForEvent(idEvento) {
+            const sectoresContainer = document.getElementById('contenedorSectores');
+            const funcionariosContainer = document.getElementById('contenedorFuncionarios');
+            const dispositivosContainer = document.getElementById('contenedorDispositivos');
+            const sectorSelect = document.getElementById('selectSectorAsignar');
+            const habilitarMessage = document.getElementById('mensajeHabilitarSector');
+            const asignarMessage = document.getElementById('mensajeAsignarFuncionario');
+
+            habilitarMessage.innerText = '';
+            asignarMessage.innerText = '';
+            sectoresContainer.innerHTML = '<p>Cargando sectores habilitados...</p>';
+            funcionariosContainer.innerHTML = '<p>Cargando funcionarios asignados...</p>';
+            dispositivosContainer.innerHTML = '<p>Cargando dispositivos habilitados...</p>';
+            sectorSelect.innerHTML = '<option value="">Cargando sectores...</option>';
+
+            try {
+                const [sectRes, funcRes, dispRes] = await Promise.all([
+                    fetch(`${API_URL}/evento/${idEvento}/sectores-habilitados`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/evento/${idEvento}/funcionarios-asignados`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/evento/${idEvento}/dispositivos-habilitados`, { headers: getAuthHeaders() })
+                ]);
+
+                if (sectRes.ok) {
+                    const sectores = await sectRes.json();
+                    if (sectores && sectores.length > 0) {
+                        sectoresContainer.innerHTML = sectores.map(s => `<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">${s.nombreSector || s.nombre}</span>`).join('');
+                        sectorSelect.innerHTML = '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('');
+                    } else {
+                        sectoresContainer.innerHTML = '<p>No hay sectores habilitados para este evento.</p>';
+                        sectorSelect.innerHTML = '<option value="">No hay sectores habilitados</option>';
+                    }
+                } else {
+                    sectoresContainer.innerHTML = '<p>No hay sectores habilitados para este evento.</p>';
+                    sectorSelect.innerHTML = '<option value="">Error cargando sectores</option>';
+                }
+
+                if (funcRes.ok) {
+                    const funcionarios = await funcRes.json();
+                    funcionariosContainer.innerHTML = funcionarios && funcionarios.length > 0 ? funcionarios.map(f => `<div style="margin-bottom:6px;"><strong>${f.nombreSector || ''}:</strong> ${f.mailFuncionario || f.mail}</div>`).join('') : '<p>No hay funcionarios asignados para este evento.</p>';
+                } else {
+                    funcionariosContainer.innerHTML = '<p>No hay funcionarios asignados para este evento.</p>';
+                }
+
+                if (dispRes.ok) {
+                    const dispositivos = await dispRes.json();
+                    dispositivosContainer.innerHTML = dispositivos && dispositivos.length > 0 ? dispositivos.map(d => `<div style="margin-bottom:6px;"><strong>${d.nombreSector || ''}:</strong> ${d.mailFuncionario || d.mail} - Terminal ${d.idDispositivo || d.id}</div>`).join('') : '<p>No hay dispositivos habilitados para este evento.</p>';
+                } else {
+                    dispositivosContainer.innerHTML = '<p>No hay dispositivos habilitados para este evento.</p>';
+                }
+            } catch (error) {
+                sectoresContainer.innerHTML = '<p>Error al cargar información de logística.</p>';
+                funcionariosContainer.innerHTML = '<p>Error al cargar información de logística.</p>';
+                dispositivosContainer.innerHTML = '<p>Error al cargar información de logística.</p>';
+                sectorSelect.innerHTML = '<option value="">Error cargando sectores</option>';
+            }
+        }
+
+        async function crearEvento() {
+            const local = document.getElementById('selectEquipoLocal').value;
+            const visitante = document.getElementById('selectEquipoVisitante').value;
+            const idEstadio = parseInt(document.getElementById('selectEstadio').value || '0', 10);
+            const fecha = document.getElementById('inputFechaEvento').value;
+            const hora = document.getElementById('inputHoraEvento').value;
+            const msgBox = document.getElementById('mensajeCrearEvento');
+            msgBox.style.color = 'var(--colorBordeaux)';
+            msgBox.innerText = '';
+
+            if (!local || !visitante || !idEstadio || !fecha || !hora) {
+                msgBox.innerText = 'Complete todos los campos';
+                return;
+            }
+            if (local === visitante) {
+                msgBox.innerText = 'El equipo local y visitante no pueden ser el mismo';
+                return;
+            }
+            const dt = new Date(`${fecha}T${hora}`);
+            if (isNaN(dt.getTime())) {
+                msgBox.innerText = 'Fecha y hora inválidas';
+                return;
+            }
+            if (dt < new Date()) {
+                msgBox.innerText = 'No se pueden crear eventos en el pasado';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/evento`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        fechaEvento: fecha,
+                        horaEvento: `${hora}:00`,
+                        idEstadio,
+                        equipoLocal: local,
+                        equipoVisitante: visitante
+                    })
+                });
+                const text = await res.text();
+                if (res.ok) {
+                    msgBox.style.color = 'green';
+                    msgBox.innerText = 'Evento creado correctamente';
+                    document.getElementById('formCrearEvento').reset();
+                    await loadEventosAdmin();
+                } else if (res.status === 403) {
+                    msgBox.innerText = 'No puede crear el evento porque el estadio está fuera de su jurisdicción.';
+                } else if (res.status === 400) {
+                    msgBox.innerText = text || 'Error creando evento';
+                } else {
+                    msgBox.innerText = text || 'Error del servidor al crear el evento';
+                }
+            } catch (error) {
+                msgBox.innerText = 'Error comunicándose con el servidor';
+            }
+        }
+
+        async function habilitarSector() {
+            const idEvento = parseInt(document.getElementById('selectEventoAdmin').value || '0', 10);
+            const nombreSector = document.getElementById('inputNuevoSector').value.trim();
+            const msgBox = document.getElementById('mensajeHabilitarSector');
+            msgBox.style.color = 'var(--colorBordeaux)';
+            msgBox.innerText = '';
+
+            if (!idEvento) {
+                msgBox.innerText = 'Seleccione primero un evento';
+                return;
+            }
+            if (!nombreSector) {
+                msgBox.innerText = 'Ingrese el nombre del sector';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/evento/habilitar-sector`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ idEvento, nombreSector })
+                });
+                const text = await res.text();
+                if (res.ok) {
+                    msgBox.style.color = 'green';
+                    msgBox.innerText = 'Sector habilitado correctamente';
+                    document.getElementById('inputNuevoSector').value = '';
+                    await loadLogisticaForEvent(idEvento);
+                } else if (res.status === 403) {
+                    msgBox.innerText = 'No puede habilitar sector en este evento por jurisdicción.';
+                } else if (res.status === 400) {
+                    msgBox.innerText = text || 'Error al habilitar sector';
+                } else {
+                    msgBox.innerText = text || 'Error del servidor al habilitar sector';
+                }
+            } catch (error) {
+                msgBox.innerText = 'Error comunicándose con el servidor';
+            }
+        }
+
+        async function asignarFuncionario() {
+            const idEvento = parseInt(document.getElementById('selectEventoAdmin').value || '0', 10);
+            const nombreSector = document.getElementById('selectSectorAsignar').value;
+            const mailFuncionario = document.getElementById('inputMailFuncionario').value.trim();
+            const msgBox = document.getElementById('mensajeAsignarFuncionario');
+            msgBox.style.color = 'var(--colorBordeaux)';
+            msgBox.innerText = '';
+
+            if (!idEvento) {
+                msgBox.innerText = 'Seleccione primero un evento';
+                return;
+            }
+            if (!nombreSector) {
+                msgBox.innerText = 'Seleccione un sector habilitado';
+                return;
+            }
+            if (!mailFuncionario) {
+                msgBox.innerText = 'Ingrese el email del funcionario';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/evento/asignar-funcionario`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ idEvento, nombreSector, mailFuncionario })
+                });
+                const text = await res.text();
+                if (res.ok) {
+                    msgBox.style.color = 'green';
+                    msgBox.innerText = 'Funcionario asignado correctamente';
+                    document.getElementById('inputMailFuncionario').value = '';
+                    await loadLogisticaForEvent(idEvento);
+                } else if (res.status === 403) {
+                    msgBox.innerText = 'No puede asignar funcionario en este evento por jurisdicción.';
+                } else if (res.status === 400) {
+                    msgBox.innerText = text || 'Error al asignar funcionario';
+                } else {
+                    msgBox.innerText = text || 'Error del servidor al asignar funcionario';
+                }
+            } catch (error) {
+                msgBox.innerText = 'Error comunicándose con el servidor';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            ensureAdminLoggedIn();
+            await Promise.all([loadEstadisticas(), loadEquipos(), loadEstadios(), loadEventosAdmin()]);
+        });
     </script>
 </body>
 </html>

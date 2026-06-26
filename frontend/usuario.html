@@ -195,7 +195,7 @@
                         const sectorNombre = entrada.nombreSector || entrada.nombre_sector || 'Sector';
                         const costoEntrada = entrada.costoEntrada || entrada.costo_entrada || 0;
                         const p = document.createElement('p');
-                        p.innerHTML = `<strong>${titulo}</strong><br/><small>${fechaStr}${estadio ? ` - ${estadio}` : ''}${fechaStr ? '<br/>' : ''}Sector: ${sectorNombre} — Costo: $${costoEntrada}</small>`;
+                        p.innerHTML = `<strong>${titulo}</strong><br/><small>${fechaStr}${estadio ? ` - ${estadio}` : ''}${fechaStr ? '<br/>' : ''}Sector: ${sectorNombre} | Costo: $${costoEntrada}</small>`;
                         item.appendChild(p);
 
                         const qrBox = document.createElement('div');
@@ -248,7 +248,7 @@
 
         setInterval(() => {
             if (displayedEntries.length) refreshAllTokens();
-        }, 5000);
+        }, 30000);
 
         async function fetchEvento(idEvento) {
             try {

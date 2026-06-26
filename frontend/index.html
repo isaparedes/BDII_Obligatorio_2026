@@ -24,22 +24,23 @@
                 <form onsubmit="iniciarSesion(event)">
                     <div class="grupoCampo">
                         <label for="correoLogin">Correo Electrónico:</label>
-                        <input type="email" id="correoLogin" required placeholder="usuario@ucu.edu.uy">
+                        <input type="email" id="correoLogin" required placeholder="usuario@example.com">
                     </div>
 
                     <div class="grupoCampo">
                         <label for="contrasenaLogin">Contraseña:</label>
-                        <input type="password" id="contrasenaLogin" required placeholder="Tu contraseña">
+                        <input type="password" id="contrasenaLogin" required placeholder="********">
                     </div>
 
                     <div id="mensajeError" style="color: red; display: none;"></div>
 
                     <button type="submit" class="btnAccion btnBordeaux">Ingresar</button>
-                    <p>
-                        ¿No estás registrado?
-                        <a href="registro.html">Registrate acá</a>
-                    </p>
-
+                    <div style="margin-top: 12px;">
+                        <p class="subtitulo">
+                            ¿No estás registrado?
+                            <a href="registro.html">Registrate acá</a>
+                        </p>
+                    </div>
                 </form>
             </div>
         </section>
@@ -47,6 +48,7 @@
 
     <script>
         const API_URL = 'http://localhost:5271/api';
+        console.log("JS cargado");
 
         function parseJwt(token) {
             const base64Url = token.split('.')[1];
