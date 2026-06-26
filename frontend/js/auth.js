@@ -60,3 +60,9 @@ function redirectToLogin() {
     localStorage.removeItem('token');
     window.location.href = 'index.html';
 }
+
+function ensureAdminLoggedIn() {
+    if (!localStorage.getItem('token')) {
+        window.location.href = 'index.html';
+    }
+}
