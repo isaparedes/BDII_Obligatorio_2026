@@ -52,16 +52,13 @@ async function loadLogisticaForEvent(idEvento) {
         if (sectRes.ok) {
             const sectores = await sectRes.json();
 
-            // Mostrar los sectores habilitados en el contenedor visual
             if (sectores && sectores.length > 0) {
                 sectoresContainer.innerHTML = sectores.map(s => `<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">${s.nombreSector || s.nombre}</span>`).join('');
             } else {
                 sectoresContainer.innerHTML = '<p>No hay sectores habilitados para este evento.</p>';
             }
 
-            // Cargar todos los sectores del estadio (para mostrar los no habilitados también)
             try {
-                // Obtener detalles del evento para conocer el estadio
                 const eventoRes = await fetch(`${API_URL}/evento/${idEvento}`, { headers: getAuthHeaders() });
                 let idEstadio = null;
                 if (eventoRes.ok) {
@@ -77,21 +74,17 @@ async function loadLogisticaForEvent(idEvento) {
                         const todosSectores = await todosRes.json();
                         console.log(todosSectores);
 
-                        // Normalizar nombres (lowercase trimmed) para comparar correctamente
                         const habilitadosNombres = (sectores || []).map(s => ((s.nombreSector  || '') + '').toLowerCase().trim());
-                        // TODOS los sectores del estadio
                         const todos = (todosSectores || []).map(s => ({
                             nombre: (s.nombreSector || '').trim()
                         }));
 
-                        // sectores habilitados
                         const habilitadosSet = new Set(
                             (sectores || []).map(s =>
                                 (s.nombreSector || s.nombre || '').trim()
                             )
                         );
 
-                        // separar
                         const habilitados = todos.filter(s => habilitadosSet.has(s.nombre));
                         const noHabilitados = todos.filter(s => !habilitadosSet.has(s.nombre));
 
@@ -121,19 +114,16 @@ async function loadLogisticaForEvent(idEvento) {
 
                         sectorSelect.innerHTML = optionsHab;
                     } else {
-                        // Fallback: solo habilitados si no se pueden obtener todos
                         sectorSelect.innerHTML = (sectores && sectores.length > 0)
                             ? '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('')
                             : '<option value="">No hay sectores habilitados</option>';
                     }
                 } else {
-                    // No se obtuvo idEstadio: mostrar solo habilitados
                     sectorSelect.innerHTML = (sectores && sectores.length > 0)
                         ? '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('')
                         : '<option value="">No hay sectores habilitados</option>';
                 }
             } catch (err) {
-                // En caso de error al obtener sectores del estadio, mostrar solo habilitados
                 sectorSelect.innerHTML = (sectores && sectores.length > 0)
                     ? '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('')
                     : '<option value="">No hay sectores habilitados</option>';

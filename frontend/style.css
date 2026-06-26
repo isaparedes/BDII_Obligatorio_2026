@@ -233,3 +233,86 @@ body {
     outline: none;
     border-color: var(--colorBordeaux);
 }
+
+
+.tablaEstadisticas {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.tablaEstadisticas thead {
+    background-color: var(--colorBordeaux);
+    color: white;
+}
+
+.tablaEstadisticas th {
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.tablaEstadisticas td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 0.9rem;
+}
+
+.tablaEstadisticas tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+.tablaEstadisticas tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tablaEstadisticas {
+    width:80%;
+    margin:20px auto;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.tablaEstadisticas thead {
+    background-color: var(--colorBordeaux);
+    color: white;
+}
+
+.tablaEstadisticas th {
+    padding: 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.tablaEstadisticas td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 0.9rem;
+}
+
+.tablaEstadisticas tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+.tablaEstadisticas tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.tablaEstadisticas tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.contenedorTabla{
+    display:flex;
+    justify-content:center;
+}
