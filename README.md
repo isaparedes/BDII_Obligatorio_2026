@@ -69,6 +69,24 @@ Una vez corriendo el backend, accedemos al frontend en otra terminal nueva.
      ```
     open index.html
     ```
+- Opcional: se puede utilizar la extensión Live Server de Visual Studio Code
 
 Automáticamente se abre el index.html donde se puede ver la pantalla de login.
+
+## Prueba de funcionalidades:
+Se pueden utilizar los diferentes usuarios creados en la base de datos para la prueba de las diferentes funcionalidades:
+
+- Usuario General:
+   - usuario: isa@example.com; contraseña: isa123
+   - usuario: vane@example.com; contraseña: vane123
+     
+- Funcionario:
+   - usuario: funcionario@fifa.com; contraseña: funcionario123
+     
+- Administrador:
+   - usuario: adminUSA@example.com; contraseña: adminUSA123
+   - usuario: adminMEX@example.com; contraseña: adminMEX123 (Este usuario es Usuario General y Administrador)
+   - usuario: adminCAN@example.com; contraseña: adminCAN123
+
+
 
