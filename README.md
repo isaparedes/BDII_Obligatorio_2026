@@ -1,92 +1,104 @@
 # BDII Obligatorio 2026
+
 #### Grupo 6: Vanesa Carballido, Josué Merino, Isabela Paredes
 
-## Instrucciones:
-- Tener instalado previamente .NET SDK 10.
-   Instalación según el sistema operativo
-   
-    -  MAC:
-   ```
-   brew install --cask dotnet-sdk
-   ```
-    -  Windows:
-   ```
-   winget install Microsoft.DotNet.SDK.10
-   ```
-     - Linux:
-   ```
-   sudo apt-get update && sudo apt-get install -y dotnet-sdk-10.0
-   ```
+## Instrucciones
 
-## Ejecución del backend:
-- Ingresar en la carpeta fuente
-   ```
+Tener instalado previamente **.NET SDK 10**.
+
+### Instalación según el sistema operativo
+
+* **macOS**
+
+  ```bash
+  brew install --cask dotnet-sdk
+  ```
+
+* **Windows**
+
+  ```bash
+  winget install Microsoft.DotNet.SDK.10
+  ```
+
+## Ejecución del backend
+
+1. Ingresar a la carpeta del backend:
+
+   ```bash
    cd TicketingAPI
    ```
-- Crear un archivo en la carpeta TicketingAPI llamado "appsettings.Development.json" utilizando de plantillla "appsettings.Example.json" modificando los datos correspondientes:
 
-     - Server:
-     ```
-     mysql.reto-ucu.net
-     ```
-     - Port:
-     ```
-     50006
-     ```
-     - Database:
-     ```
-     CD_Grupo6
-     ```
-     - User:
-     ```
-     cd_g6_admin
-     ```
-     - Password:
-     ```
-     2026grupo6
-     ```
-     - Secret:
-     ```
-     Mundial2026VanesaJosueIsabelaBDII
-     ```
+2. Crear un archivo llamado **`appsettings.Development.json`** utilizando como plantilla **`appsettings.Example.json`**.
 
-- Guardar el archivo, luego correr el .NET SDK 10.
-  
-      dotnet run     
-  
-Ya está corriendo el backend.
+3. Completar los siguientes datos:
 
-## Ejecución del frontend:
-Una vez corriendo el backend, accedemos al frontend en otra terminal nueva.
-
-- Ingresar a la carpeta de frontend:
-  
-   ```
-    cd frontend
+   ```text
+   Server:   mysql.reto-ucu.net
+   Port:     50006
+   Database: CD_Grupo6
+   User:     cd_g6_admin
+   Password: 2026grupo6
+   Secret:   Mundial2026VanesaJosueIsabelaBDII
    ```
 
-- Luego abirmos el HTML:
-     ```
-    open index.html
-    ```
-- Opcional: se puede utilizar la extensión Live Server de Visual Studio Code
+4. Guardar el archivo y ejecutar:
 
-Automáticamente se abre el index.html donde se puede ver la pantalla de login.
+   ```bash
+   dotnet run
+   ```
 
-## Prueba de funcionalidades:
-Se pueden utilizar los diferentes usuarios creados en la base de datos para la prueba de las diferentes funcionalidades:
+Una vez iniciado correctamente, el backend quedará en ejecución.
 
-- Usuario General:
-   - usuario: isa@example.com; contraseña: isa123
-   - usuario: vane@example.com; contraseña: vane123
-     
-- Funcionario:
-   - usuario: funcionario@fifa.com; contraseña: funcionario123
-     
-- Administrador:
-   - usuario: adminUSA@example.com; contraseña: adminUSA123
-   - usuario: adminMEX@example.com; contraseña: adminMEX123 (Este usuario es Usuario General y Administrador)
-   - usuario: adminCAN@example.com; contraseña: adminCAN123
+---
 
+## Ejecución del frontend
 
+Con el backend en ejecución, abrir una nueva terminal.
 
+1. Ingresar a la carpeta del frontend:
+
+   ```bash
+   cd frontend
+   ```
+
+2. Abrir el frontend utilizando una de las siguientes opciones:
+
+   **Opción recomendada:** utilizar la extensión **Live Server** de Visual Studio Code.
+
+   **Alternativa (macOS):**
+
+   ```bash
+   open index.html
+   ```
+
+   **Alternativa (Windows):** abrir el archivo `index.html` directamente desde el navegador.
+
+Al abrir la aplicación se mostrará la pantalla de inicio de sesión.
+
+---
+
+## Usuarios de prueba
+
+### Usuario General
+
+* **Usuario:** `isa@example.com`
+  **Contraseña:** `isa123`
+
+* **Usuario:** `vane@example.com`
+  **Contraseña:** `vane123`
+
+### Funcionario
+
+* **Usuario:** `funcionario@fifa.com`
+  **Contraseña:** `funcionario123`
+
+### Administrador
+
+* **Usuario:** `adminUSA@example.com`
+  **Contraseña:** `adminUSA123`
+
+* **Usuario:** `adminMEX@example.com`
+  **Contraseña:** `adminMEX123` *(Administrador y Usuario General)*
+
+* **Usuario:** `adminCAN@example.com`
+  **Contraseña:** `adminCAN123`
