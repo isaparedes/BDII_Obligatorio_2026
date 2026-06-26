@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using TicketingAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +70,7 @@ builder.Services.AddCors(options =>
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

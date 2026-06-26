@@ -24,8 +24,6 @@ public class ValidacionController : ControllerBase
     public async Task<IActionResult> Escanear([FromBody] ValidarTokenDTO dto)
     {
         var resultado = await _repo.ValidarToken(dto);
-        Console.WriteLine(resultado);
-
         if (resultado == "Acceso permitido")
             return Ok(resultado);
 

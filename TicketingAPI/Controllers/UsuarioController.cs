@@ -141,5 +141,4 @@ public class UsuarioController : ControllerBase
         return Ok("Estado de verificación actualizado correctamente");
     }
 
-
 }
