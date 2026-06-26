@@ -97,21 +97,12 @@
         <div id="bloqueHistorialTransferencias" class="subVista">
             <div class="tarjetaContenedor">
                 <h3 class="tituloTarjeta">Historial de transferencias</h3>
-                
+
                 <h4 style="margin: 15px 0 5px 0; font-size: 0.95rem; color: var(--colorVerdeOliva)">Recibidas (Por Aceptar/Rechazar)</h4>
-                <div class="itemTransferencia" style="background: #edf2f7; padding: 10px; border-radius: 6px; border-left: 4px solid gold; margin-bottom: 8px;">
-                    <p style="font-size: 0.85rem;"><strong>De:</strong> carlos@ucu.edu.uy</p>
-                    <p style="font-size: 0.85rem;"><strong>Entrada:</strong> Sector B - Uru vs Por</p>
-                    <div style="display: flex; gap: 5px; margin-top: 8px;">
-                        <button class="btnAccion btnVerde" style="padding: 4px; font-size: 0.8rem;" onclick="alert('Aceptada')">Aceptar</button>
-                        <button class="btnAccion" style="padding: 4px; font-size: 0.8rem; background-color: #e53e3e;" onclick="alert('Rechazada')">Rechazar</button>
-                    </div>
-                </div>
+                <div id="recibidasTransferencias" style="margin-bottom: 12px;">Cargando recibidas...</div>
 
                 <h4 style="margin: 15px 0 5px 0; font-size: 0.95rem; color: var(--colorTextoPrincipal)">Enviadas y Estados</h4>
-                <div style="font-size: 0.85rem; padding: 6px; border-bottom: 1px solid var(--bordeSuave);">
-                    <span><strong>Para:</strong> ana@ucu.edu.uy</span> - <b style="color: green;">Aceptada</b>
-                </div>
+                <div id="enviadasTransferencias">Cargando enviadas...</div>
             </div>
         </div>
     </main>
@@ -190,6 +181,7 @@
             document.getElementById(idBloqueDestino).classList.add('activa');
             document.getElementById('btnSub' + idBloqueDestino.substring(6)).classList.add('activa');
             if (idBloqueDestino === 'bloqueTransferir') loadEntradasTransferibles();
+            if (idBloqueDestino === 'bloqueHistorialTransferencias') loadMisTransferencias();
         }
 
         // Cargar datos al inicio
@@ -431,6 +423,134 @@
             document.getElementById('entradaSeleccionadaTexto').innerText = descripcion;
             document.getElementById('bloqueFormularioTransferencia').style.display = 'block';
             document.getElementById('mensajeTransferencia').innerText = '';
+        }
+
+        async function loadMisTransferencias() {
+            const recibidasContainer = document.getElementById('recibidasTransferencias');
+            const enviadasContainer = document.getElementById('enviadasTransferencias');
+            recibidasContainer.innerHTML = '<p>Cargando recibidas...</p>';
+            enviadasContainer.innerHTML = '<p>Cargando enviadas...</p>';
+
+            try {
+                const res = await fetch(`${API_URL}/transferencia/mis-transferencias`, { headers: getAuthHeaders() });
+                if (!res.ok) {
+                    const text = await res.text();
+                    recibidasContainer.innerHTML = `<p style="color:red;">Error cargando transferencias: ${text || res.statusText}</p>`;
+                    enviadasContainer.innerHTML = `<p style="color:red;">Error cargando transferencias: ${text || res.statusText}</p>`;
+                    return;
+                }
+
+                const data = await res.json();
+                const recibidas = data.recibidas || data.Recibidas || [];
+                const enviadas = data.enviadas || data.Enviadas || [];
+
+                if (!recibidas.length) {
+                    recibidasContainer.innerHTML = '<p>No hay transferencias recibidas.</p>';
+                } else {
+                    recibidasContainer.innerHTML = '';
+                    recibidas.forEach(t => {
+                        const estado = t.estadoTransferencia || t.EstadoTransferencia || '';
+                        const correoRemitente = t.mailRemitente || t.MailRemitente || '';
+                        const idEntrada = t.idEntrada || t.IdEntrada || 0;
+                        const fecha = formatDateTime(t.fechaTransferencia || t.FechaTransferencia);
+
+                        const item = document.createElement('div');
+                        item.className = 'itemTransferencia';
+                        item.style.background = '#edf2f7';
+                        item.style.padding = '10px';
+                        item.style.borderRadius = '6px';
+                        item.style.borderLeft = '4px solid gold';
+                        item.style.marginBottom = '8px';
+
+                        item.innerHTML = `
+                            <p style="font-size:0.85rem;"><strong>De:</strong> ${correoRemitente}</p>
+                            <p style="font-size:0.85rem;"><strong>Entrada:</strong> #${idEntrada}</p>
+                            <p style="font-size:0.85rem;"><strong>Fecha:</strong> ${fecha}</p>
+                            <p style="font-size:0.85rem;"><strong>Estado:</strong> ${estado}</p>
+                        `;
+
+                        if (estado === 'En proceso') {
+                            const acciones = document.createElement('div');
+                            acciones.style.display = 'flex';
+                            acciones.style.gap = '5px';
+                            acciones.style.marginTop = '8px';
+
+                            const aceptarBtn = document.createElement('button');
+                            aceptarBtn.className = 'btnAccion btnVerde';
+                            aceptarBtn.style.padding = '4px';
+                            aceptarBtn.style.fontSize = '0.8rem';
+                            aceptarBtn.innerText = 'Aceptar';
+                            aceptarBtn.onclick = () => responderTransferencia(t.idTransferencia || t.IdTransferencia, 'Aceptada');
+
+                            const rechazarBtn = document.createElement('button');
+                            rechazarBtn.className = 'btnAccion';
+                            rechazarBtn.style.padding = '4px';
+                            rechazarBtn.style.fontSize = '0.8rem';
+                            rechazarBtn.style.backgroundColor = '#e53e3e';
+                            rechazarBtn.innerText = 'Rechazar';
+                            rechazarBtn.onclick = () => responderTransferencia(t.idTransferencia || t.IdTransferencia, 'Rechazada');
+
+                            acciones.appendChild(aceptarBtn);
+                            acciones.appendChild(rechazarBtn);
+                            item.appendChild(acciones);
+                        }
+
+                        recibidasContainer.appendChild(item);
+                    });
+                }
+
+                if (!enviadas.length) {
+                    enviadasContainer.innerHTML = '<p>No hay transferencias enviadas.</p>';
+                } else {
+                    enviadasContainer.innerHTML = '';
+                    enviadas.forEach(t => {
+                        const estado = t.estadoTransferencia || t.EstadoTransferencia || '';
+                        const correoDestinatario = t.mailDestinatario || t.MailDestinatario || '';
+                        const idEntrada = t.idEntrada || t.IdEntrada || 0;
+                        const fecha = formatDateTime(t.fechaTransferencia || t.FechaTransferencia);
+
+                        const item = document.createElement('div');
+                        item.style.fontSize = '0.85rem';
+                        item.style.padding = '8px';
+                        item.style.borderBottom = '1px solid var(--bordeSuave)';
+                        item.innerHTML = `
+                            <p><strong>Para:</strong> ${correoDestinatario}</p>
+                            <p><strong>Entrada:</strong> #${idEntrada}</p>
+                            <p><strong>Fecha:</strong> ${fecha}</p>
+                            <p><strong>Estado:</strong> <b style="color: ${estado === 'Aceptada' ? 'green' : estado === 'Rechazada' ? '#e53e3e' : '#b7791f'};">${estado}</b></p>
+                        `;
+                        enviadasContainer.appendChild(item);
+                    });
+                }
+            } catch (err) {
+                recibidasContainer.innerHTML = `<p style="color:red;">Error cargando transferencias: ${err.message || err}</p>`;
+                enviadasContainer.innerHTML = `<p style="color:red;">Error cargando transferencias: ${err.message || err}</p>`;
+            }
+        }
+
+        async function responderTransferencia(idTransferencia, estadoTransferencia) {
+            try {
+                const res = await fetch(`${API_URL}/transferencia/${idTransferencia}/responder`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ EstadoTransferencia: estadoTransferencia })
+                });
+                if (!res.ok) {
+                    const text = await res.text();
+                    alert(text || 'Error al responder transferencia');
+                    return;
+                }
+                await loadMisTransferencias();
+            } catch (err) {
+                alert('Error al responder transferencia: ' + (err.message || err));
+            }
+        }
+
+        function formatDateTime(dateValue) {
+            if (!dateValue) return 'Sin fecha';
+            const dt = new Date(dateValue);
+            if (isNaN(dt.getTime())) return String(dateValue);
+            return `${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
         }
 
         document.addEventListener('click', (e) => {

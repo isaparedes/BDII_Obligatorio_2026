@@ -37,7 +37,7 @@
                 <div class="listaDispositivos" id="listaDispositivos" style="margin-bottom: 16px;"></div>
 
                 <div class="bloqueEscaneo">
-                    <p class="instruccion">Ingresa el token dinámico o simula el escaneo de cámara:</p>
+                    <p class="instruccion">Ingresa el token dinámico:</p>
                     <input type="text" id="tokenEscaneado" placeholder="Ej: TOKEN-A1B2" class="inputEscaneo">
                     <button id="btnValidarEntrada" onclick="validarEntrada()" class="btnAccion btnVerde">Validar entrada</button>
                     <div id="mensajeValidacion" style="margin-top: 10px; font-size:0.95rem;"></div>
@@ -142,7 +142,7 @@
                 card.style.marginBottom = '10px';
                 card.style.background = index === 0 ? '#f0f8ff' : '#ffffff';
                 card.dataset.deviceId = id;
-                card.innerHTML = `<p><strong>Device ID:</strong> ${id}</p>`;
+                card.innerHTML = `<p><strong>N° dispositivo:</strong> ${id}</p>`;
                 card.addEventListener('click', () => selectDeviceCard(card, id));
                 container.appendChild(card);
 
