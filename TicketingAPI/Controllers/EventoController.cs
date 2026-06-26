@@ -79,7 +79,7 @@ public class EventoController : ControllerBase
     [Authorize(Roles = "Administrador")]
      public async Task<IActionResult> AsignarFuncionario([FromBody] AsignarFuncionarioDTO dto)
     {
-        if (!await _repo.EsEventoPasado(dto.IdEvento))
+        if (await _repo.EsEventoPasado(dto.IdEvento))
             return BadRequest("El evento ya sucedió");
 
         if (!await _repo.ExisteFuncionario(dto.MailFuncionario))

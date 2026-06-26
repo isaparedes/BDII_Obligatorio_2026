@@ -38,6 +38,9 @@ public class ValidacionRepository
             new { token.IdEntrada }
         );
 
+        if (entrada != null && entrada.EstadoEntrada == "Consumida")
+            return "La entrada ya fue consumida";
+
         var autorizado = await conn.QueryFirstOrDefaultAsync<int>(@"
             SELECT COUNT(*) FROM asignacion a
             INNER JOIN dispositivo d ON a.mail_funcionario = d.mail_funcionario
@@ -47,7 +50,7 @@ public class ValidacionRepository
         );
 
         if (autorizado == 0)
-            return "El dispositivo no está autorizado para este evento";
+            return "El dispositivo no está autorizado para este sector en ese evento";
 
         await conn.ExecuteAsync(@"
             UPDATE token
