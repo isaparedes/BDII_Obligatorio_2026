@@ -26,6 +26,7 @@
     <main class="contenedorPrincipal">
         <div class="pestañasInternas">
             <button onclick="cambiarSubVista('bloqueMisEntradas')" class="btnPestaña activa" id="btnSubMisEntradas">Mis Entradas</button>
+            <button onclick="cambiarSubVista('bloqueMisCompras')" class="btnPestaña" id="btnSubMisCompras">Mis compras</button>
             <button onclick="cambiarSubVista('bloqueComprar')" class="btnPestaña" id="btnSubComprar">Adquirir entradas</button>
             <button onclick="cambiarSubVista('bloqueTransferir')" class="btnPestaña" id="btnSubTransferir">Transferir entrada</button>
             <button onclick="cambiarSubVista('bloqueHistorialTransferencias')" class="btnPestaña" id="btnSubHistorialTransferencias">Historial de transferencias </button>
@@ -36,6 +37,16 @@
                 <h3 class="tituloTarjeta">Mis entradas activas</h3>
                 <div id="misEntradasContainer">
                     <!-- Entradas del usuario se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueMisCompras" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Mis compras</h3>
+
+                <div id="misComprasContainer">
+                    <!-- Las compras se cargan aquí -->
                 </div>
             </div>
         </div>
@@ -173,8 +184,8 @@
 
         // Navegación entre sub-vistas
         function cambiarSubVista(idBloqueDestino) {
-            const bloques = ['bloqueMisEntradas', 'bloqueComprar', 'bloqueTransferir', 'bloqueHistorialTransferencias'];
-            const botones = ['btnSubMisEntradas', 'btnSubComprar', 'btnSubTransferir', 'btnSubHistorialTransferencias'];
+            const bloques = ['bloqueMisEntradas', 'bloqueMisCompras', 'bloqueComprar', 'bloqueTransferir', 'bloqueHistorialTransferencias'];
+            const botones = ['btnSubMisEntradas', 'btnSubMisCompras', 'btnSubComprar', 'btnSubTransferir', 'btnSubHistorialTransferencias'];
             bloques.forEach(b => document.getElementById(b).classList.remove('activa'));
             botones.forEach(btn => document.getElementById(btn).classList.remove('activa'));
 
@@ -182,6 +193,7 @@
             document.getElementById('btnSub' + idBloqueDestino.substring(6)).classList.add('activa');
             if (idBloqueDestino === 'bloqueTransferir') loadEntradasTransferibles();
             if (idBloqueDestino === 'bloqueHistorialTransferencias') loadMisTransferencias();
+            if (idBloqueDestino === 'bloqueMisCompras') loadMisCompras();
         }
 
         // Cargar datos al inicio
@@ -206,99 +218,149 @@
         let tokenRefreshRunning = false;
 
         async function loadMisEntradas() {
+
             const container = document.getElementById('misEntradasContainer');
             container.innerHTML = '<p>Cargando...</p>';
             displayedEntries.length = 0;
 
             try {
-                const res = await fetch(`${API_URL}/compra/mis-compras`, { headers: getAuthHeaders() });
-                if (!res.ok) throw new Error(await res.text());
+
+                const res = await fetch(`${API_URL}/entrada/mis-entradas`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!res.ok)
+                    throw new Error(await res.text());
+
+                const entradas = await res.json();
+
+                if (!entradas.length) {
+                    container.innerHTML = '<p>No tienes entradas.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                for (const entrada of entradas) {
+
+                    const div = document.createElement('div');
+                    div.className = 'tarjetaContenedor';
+                    div.style.marginBottom = '12px';
+
+                    const eventInfo = await fetchEvento(entrada.idEvento);
+                    console.log(eventInfo)
+                    console.log(entrada)
+
+                    const local = eventInfo?.equipoLocal;
+                    const visitante = eventInfo?.equipoVisitante;
+                    const estadio = eventInfo?.nombreEstadio;
+
+                    const fecha = new Date(eventInfo?.fechaEvento || '');
+                    const hora = eventInfo?.horaEvento || '';
+
+                    const titulo = local && visitante
+                        ? `${local} vs ${visitante}`
+                        : `Evento #${entrada.idEvento}`;
+
+                    const estadoEntrada = entrada.estadoEntrada;
+
+                    div.innerHTML = `
+                        <h4>${titulo}</h4>
+                        <p><strong>Estado:</strong> ${estadoEntrada}</p>
+                        <p><strong>Sector:</strong> ${entrada.nombreSector}</p>
+                        <p><strong>Estadio:</strong> ${estadio || ''}</p>
+                        <p><strong>Fecha:</strong> ${fecha ? fecha.toLocaleDateString() : ''} ${hora}</p>
+                    `;
+
+                    const qrBox = document.createElement('div');
+                    qrBox.style.width = '120px';
+                    qrBox.style.height = '120px';
+
+                    // SOLO QR si está activa
+                    if (estadoEntrada === 'Consumida') {
+                        qrBox.innerHTML = `
+                            <div style="
+                                width:120px;
+                                height:120px;
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                border:1px solid #ccc;
+                                color:#666;
+                                font-weight:bold;">
+                                Consumida
+                            </div>`;
+                    } else {
+                        displayedEntries.push({
+                            idEntrada: entrada.idEntrada,
+                            qrBox
+                        });
+                    }
+
+                    div.appendChild(qrBox);
+                    container.appendChild(div);
+                }
+
+                refreshAllTokens();
+
+            } catch (err) {
+                container.innerHTML = `<p style="color:red;">${err.message}</p>`;
+            }
+        }
+
+        async function loadMisCompras() {
+
+            const container = document.getElementById("misComprasContainer");
+            container.innerHTML = "<p>Cargando...</p>";
+
+            try {
+
+                const res = await fetch(`${API_URL}/compra/mis-compras`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!res.ok)
+                    throw new Error(await res.text());
+
                 const compras = await res.json();
 
-                if (!compras || compras.length === 0) {
-                    container.innerHTML = '<p>No hay compras registradas.</p>';
+                if (!compras.length) {
+                    container.innerHTML = "<p>No hay compras.</p>";
                     return;
                 }
 
                 container.innerHTML = '';
 
                 for (const compra of compras) {
-                    const compraDiv = document.createElement('div');
-                    compraDiv.className = 'tarjetaContenedor';
-                    compraDiv.style.marginBottom = '12px';
+                    compra.fechaCompra = compra.fechaCompra.split(' ')[0];
 
-                    const header = document.createElement('h4');
-                    header.innerText = `Compra #${compra.idCompra}` + ((compra.estadoCompra && compra.estadoCompra !== 'Paga') ? ` — Estado: ${compra.estadoCompra}` : '');
-                    compraDiv.appendChild(header);
+                    const card = document.createElement("div");
+                    card.className = "tarjetaContenedor";
+                    card.style.marginBottom = "15px";
 
-                    const list = document.createElement('div');
-                    for (const entrada of compra.entradas || []) {
-                        const item = document.createElement('div');
-                        item.style.borderBottom = '1px solid var(--bordeSuave)';
-                        item.style.padding = '8px 0';
+                    const entradasHtml = compra.entradas.map(e => `
+                        <li>
+                            Sector: ${e.nombreSector} |
+                            Estado: ${e.estadoEntrada}
+                        </li>
+                    `).join('');
 
-                        const eventInfo = await fetchEvento(entrada.idEvento || entrada.id_evento);
-                        const local = eventInfo ? (eventInfo.equipoLocal || eventInfo.EquipoLocal) : null;
-                        const visitante = eventInfo ? (eventInfo.equipoVisitante || eventInfo.EquipoVisitante) : null;
-                        const estadio = eventInfo ? (eventInfo.nombreEstadio || eventInfo.NombreEstadio) : '';
-                        let fechaStr = '';
-                        if (eventInfo) {
-                            const fecha = new Date(eventInfo.fechaEvento || eventInfo.FechaEvento);
-                            const horaEvento = eventInfo.horaEvento || eventInfo.HoraEvento || '';
-                            const hora = typeof horaEvento === 'string' ? horaEvento.split(':').slice(0, 2).join(':') : horaEvento;
-                            const fechaLocal = fecha.toLocaleDateString();
-                            fechaStr = hora ? `${fechaLocal} ${hora}` : fechaLocal;
-                        }
+                    card.innerHTML = `
+                        <h4>Compra #${compra.idCompra}</h4>
+                        <p><strong>Fecha:</strong> ${compra.fechaCompra}</p>
+                        <p><strong>Estado:</strong> ${compra.estadoCompra}</p>
+                        <p><strong>Monto:</strong> $${compra.montoTotal}</p>
+                        <p><strong>Cantidad entradas:</strong> ${compra.entradas.length}</p>
+                        <hr>
+                        <strong>Entradas</strong>
+                        <ul>${entradasHtml}</ul>
+                    `;
 
-                        const titulo = (local && visitante) ? `${local} vs ${visitante}` : `Evento #${entrada.idEvento || entrada.id_evento}`;
-                        const sectorNombre = entrada.nombreSector || entrada.nombre_sector || 'Sector';
-                        const costoEntrada = entrada.costoEntrada || entrada.costo_entrada || 0;
-                        const p = document.createElement('p');
-                        p.innerHTML = `<strong>${titulo}</strong><br/><small>${fechaStr}${estadio ? ` - ${estadio}` : ''}${fechaStr ? '<br/>' : ''}Sector: ${sectorNombre} | Costo: $${costoEntrada}</small>`;
-                        item.appendChild(p);
-
-                        const qrBox = document.createElement('div');
-                        qrBox.style.width = '120px';
-                        qrBox.style.height = '120px';
-                        qrBox.id = `qr-${entrada.idEntrada || entrada.id_entrada}`;
-
-                        const estadoEntrada = entrada.estadoEntrada || entrada.estado_entrada;
-
-                        if (estadoEntrada === 'Consumida') {
-                            qrBox.innerHTML = `
-                                <div style="
-                                    width:120px;
-                                    height:120px;
-                                    display:flex;
-                                    align-items:center;
-                                    justify-content:center;
-                                    text-align:center;
-                                    border:1px solid #ccc;
-                                    border-radius:6px;
-                                    color:#666;
-                                    font-weight:bold;
-                                    padding:8px;
-                                ">
-                                    Entrada<br>consumida
-                                </div>`;
-                        } else {
-                            displayedEntries.push({
-                                idEntrada: entrada.idEntrada || entrada.id_entrada,
-                                qrBox
-                            });
-                        }
-
-                        item.appendChild(qrBox);
-                        list.appendChild(item);
-                    }
-
-                    compraDiv.appendChild(list);
-                    container.appendChild(compraDiv);
+                    container.appendChild(card);
                 }
 
-                refreshAllTokens();
             } catch (err) {
-                container.innerHTML = `<p style="color:red;">Error cargando entradas: ${err.message || err}</p>`;
+                container.innerHTML = `<p style="color:red;">${err.message}</p>`;
             }
         }
 

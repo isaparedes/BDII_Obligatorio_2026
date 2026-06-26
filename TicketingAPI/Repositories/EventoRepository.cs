@@ -103,11 +103,18 @@ public class EventoRepository
     }
 
     // Obtener un evento por su id_evento
-    public async Task<Evento?> ObtenerPorId(int idEvento)
+    public async Task<EventoResponseDTO?> ObtenerPorId(int idEvento)
     {
         using var conn = _db.CreateConnection();
-        return await conn.QueryFirstOrDefaultAsync<Evento>(
-            "SELECT * FROM evento WHERE id_evento = @IdEvento",
+        return await conn.QueryFirstOrDefaultAsync<EventoResponseDTO>(@"
+            SELECT e.id_evento, e.id_estadio, 
+            e.fecha_evento, e.hora_evento,
+            e.equipo_local, e.equipo_visitante,
+            es.nombre_estadio
+            FROM evento e
+            JOIN estadio es
+            ON e.id_estadio = es.id_estadio
+            WHERE id_evento = @IdEvento",
             new { IdEvento = idEvento }
         );
     }
