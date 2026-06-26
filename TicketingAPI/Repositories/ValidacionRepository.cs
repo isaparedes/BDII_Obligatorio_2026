@@ -45,8 +45,9 @@ public class ValidacionRepository
             SELECT COUNT(*) FROM asignacion a
             INNER JOIN dispositivo d ON a.mail_funcionario = d.mail_funcionario
             WHERE d.id_dispositivo = @IdDispositivo
-            AND a.id_evento = @IdEvento",
-            new { dto.IdDispositivo, entrada!.IdEvento }
+            AND a.id_evento = @IdEvento
+            AND a.nombre_sector = @NombreSector",
+            new { dto.IdDispositivo, entrada!.IdEvento, entrada!.NombreSector }
         );
 
         if (autorizado == 0)
