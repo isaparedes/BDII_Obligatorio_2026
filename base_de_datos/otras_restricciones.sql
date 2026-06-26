@@ -134,6 +134,7 @@ BEGIN
         FROM evento
         WHERE id_estadio = NEW.id_estadio
         AND fecha_evento = NEW.fecha_evento
+        AND hora_evento = NEW.hora_evento
     )
     THEN
         SIGNAL SQLSTATE '45000'
@@ -328,6 +329,46 @@ BEGIN
         SET MESSAGE_TEXT = 'Solo se puede validar un token activo';
     END IF;
 END //
+DELIMITER ;
+
+-- RNE43: la comision asociada a una compra debe ser la comision vigente en la fecha de la compra.
+DELIMITER //
+CREATE TRIGGER trg_asignar_comision_vigente
+BEFORE INSERT ON compra
+FOR EACH ROW
+BEGIN
+    DECLARE v_id_comision INT;
+
+    SELECT id_comision
+    INTO v_id_comision
+    FROM comision
+    WHERE NEW.fecha_compra BETWEEN fecha_inicio AND fecha_fin;
+
+    IF v_id_comision IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No existe una comision vigente para la fecha de compra';
+    END IF;
+
+    SET NEW.id_comision = v_id_comision;
+END//
+DELIMITER ;
+
+-- RNE44: no pueden haber dos registros de comision vigentes a la vez.
+DELIMITER //
+CREATE TRIGGER trg_una_comision_vigente
+BEFORE INSERT ON comision
+FOR EACH ROW
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM comision c
+        WHERE NEW.fecha_inicio <= c.fecha_fin
+          AND NEW.fecha_fin >= c.fecha_inicio
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ya existe una comision para ese periodo';
+    END IF;
+END//
 DELIMITER ;
 
 -- RESTRICCIONES ESTABLECIDAS EN EL MODELO LÓGICO:

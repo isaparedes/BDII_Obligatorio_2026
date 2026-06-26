@@ -11,7 +11,7 @@ CREATE TABLE usuario (
     pais_direccion VARCHAR(50) NOT NULL,
     localidad VARCHAR(50) NOT NULL,
     calle VARCHAR(50) NOT NULL,
-    numero_calle INT NOT NULL,
+    numero_calle VARCHAR(10) NOT NULL, -- Para soportar Ej: "3333 bis"
     codigo_postal VARCHAR(20) NOT NULL,
     UNIQUE (pais_documento, tipo_documento, numero_documento)
 );
@@ -21,14 +21,14 @@ CREATE TABLE usuario_telefono (
     mail_usuario VARCHAR(255),
     numero_telefono VARCHAR(20),
     PRIMARY KEY (mail_usuario, numero_telefono),
-    FOREIGN KEY (mail_usuario) REFERENCES usuario(mail)
+    FOREIGN KEY (mail_usuario) REFERENCES usuario(mail) ON DELETE CASCADE
 );
 
 -- TABLA: funcionario
 CREATE TABLE funcionario (
     mail VARCHAR(255) PRIMARY KEY,
     numero_legajo INT NOT NULL UNIQUE,
-    FOREIGN KEY (mail) REFERENCES usuario(mail)
+    FOREIGN KEY (mail) REFERENCES usuario(mail) ON DELETE CASCADE
 );
 
 -- TABLA: administrador
@@ -36,7 +36,7 @@ CREATE TABLE administrador (
     mail VARCHAR(255) PRIMARY KEY,
     fecha_asignacion DATE NOT NULL,
     pais_sede VARCHAR(50) NOT NULL,
-    FOREIGN KEY (mail) REFERENCES usuario(mail)
+    FOREIGN KEY (mail) REFERENCES usuario(mail) ON DELETE CASCADE
 );
 
 -- TABLA: usuario_general
@@ -44,7 +44,7 @@ CREATE TABLE usuario_general (
     mail VARCHAR(255) PRIMARY KEY,
     estado_verificacion VARCHAR(20) NOT NULL DEFAULT 'Pendiente',
     fecha_registro DATE NOT NULL,
-    FOREIGN KEY (mail) REFERENCES usuario(mail),
+    FOREIGN KEY (mail) REFERENCES usuario(mail) ON DELETE CASCADE,
     CHECK (estado_verificacion IN ('Pendiente', 'Aprobado', 'No aprobado')) -- RNE7
 );
 
@@ -89,7 +89,7 @@ CREATE TABLE sector (
     costo_sector DECIMAL(10,2) NOT NULL,
     capacidad INT NOT NULL,
     PRIMARY KEY (id_estadio, nombre_sector),
-    FOREIGN KEY (id_estadio) REFERENCES estadio(id_estadio),
+    FOREIGN KEY (id_estadio) REFERENCES estadio(id_estadio) ON DELETE CASCADE,
     CHECK (nombre_sector IN ('A', 'B', 'C', 'D')), -- RNE8
     CHECK (costo_sector > 0), -- RNE10
     CHECK (capacidad > 0) -- RNE9
@@ -122,8 +122,8 @@ CREATE TABLE habilita (
     id_estadio INT,
     nombre_sector CHAR(1),
     PRIMARY KEY (id_evento, id_estadio, nombre_sector),
-    FOREIGN KEY (id_evento) REFERENCES evento(id_evento),
-    FOREIGN KEY (id_estadio, nombre_sector) REFERENCES sector(id_estadio, nombre_sector)
+    FOREIGN KEY (id_evento) REFERENCES evento(id_evento) ON DELETE CASCADE,
+    FOREIGN KEY (id_estadio, nombre_sector) REFERENCES sector(id_estadio, nombre_sector) ON DELETE CASCADE 
 );
 
 -- TABLA: asignacion
@@ -133,9 +133,9 @@ CREATE TABLE asignacion (
     nombre_sector CHAR(1),
     mail_funcionario VARCHAR(255),
     PRIMARY KEY (id_evento, id_estadio, nombre_sector, mail_funcionario),
-    FOREIGN KEY (id_evento) REFERENCES evento(id_evento),
-    FOREIGN KEY (id_estadio, nombre_sector) REFERENCES sector(id_estadio, nombre_sector),
-    FOREIGN KEY (mail_funcionario) REFERENCES funcionario(mail)
+    FOREIGN KEY (id_evento) REFERENCES evento(id_evento) ON DELETE CASCADE,
+    FOREIGN KEY (id_estadio, nombre_sector) REFERENCES sector(id_estadio, nombre_sector) ON DELETE CASCADE,
+    FOREIGN KEY (mail_funcionario) REFERENCES funcionario(mail) ON DELETE CASCADE 
 );
 
 -- TABLA: entrada
@@ -167,7 +167,7 @@ CREATE TABLE transferencia (
     FOREIGN KEY (id_entrada) REFERENCES entrada(id_entrada),
     FOREIGN KEY (mail_remitente) REFERENCES usuario_general(mail),
     FOREIGN KEY (mail_destinatario) REFERENCES usuario_general(mail),
-    CHECK (fecha_transferencia < fecha_aceptacion), -- RNE27
+    CHECK (fecha_transferencia <= fecha_aceptacion), -- RNE27
     CHECK (estado_transferencia IN ('En proceso', 'Aceptada', 'Rechazada')), -- RNE29
     CHECK (mail_remitente <> mail_destinatario) -- RNE32
 );
@@ -191,7 +191,7 @@ CREATE TABLE token (
     FOREIGN KEY (id_entrada) REFERENCES entrada(id_entrada),
     FOREIGN KEY (id_dispositivo_valida) REFERENCES dispositivo(id_dispositivo),
     CHECK (estado_token IN ('Activo', 'Expirado')), -- RNE36
-    CHECK (fecha_hora_vigencia < fecha_hora_validacion),
+    CHECK (fecha_hora_vigencia <= fecha_hora_validacion),
     CHECK (fecha_hora_expiracion = DATE_ADD(fecha_hora_vigencia, INTERVAL 30 SECOND)) -- RNE35
 );
 
