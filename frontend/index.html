@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticketing - Ingreso</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="barraNavegacion">
+        <div class="logoSistema">UCU Ticket</div>
+        <div class="datosSesion">
+            <span>Ingreso al sistema</span>
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal">
+        <section id="pantallaAcceso" class="seccionPantalla activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Ingresar al sistema</h3>
+                <p class="subtitulo">Ingresá tus credenciales para acceder</p>
+            
+                <form onsubmit="iniciarSesion(event)">
+                    <div class="grupoCampo">
+                        <label for="correoLogin">Correo Electrónico:</label>
+                        <input type="email" id="correoLogin" required placeholder="usuario@example.com">
+                    </div>
+
+                    <div class="grupoCampo">
+                        <label for="contrasenaLogin">Contraseña:</label>
+                        <input type="password" id="contrasenaLogin" required placeholder="********">
+                    </div>
+
+                    <div id="mensajeError" style="color: red; display: none;"></div>
+
+                    <button type="submit" class="btnAccion btnBordeaux">Ingresar</button>
+                    <div style="margin-top: 12px;">
+                        <p class="subtitulo">
+                            ¿No estás registrado?
+                            <a href="registro.html">Registrate acá</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+        <script src="js/api.js"></script>
+        <script src="js/auth.js"></script>
+    <script>
+        async function iniciarSesion(event) {
+            event.preventDefault();
+
+            const mail = document.getElementById('correoLogin').value;
+            const contrasena = document.getElementById('contrasenaLogin').value;
+            const mensajeError = document.getElementById('mensajeError');
+            mensajeError.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/usuario/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mail, contrasena })
+                });
+
+                if (!response.ok) {
+                    const error = await response.text();
+                    mensajeError.textContent = error;
+                    mensajeError.style.display = 'block';
+                    return;
+                }
+
+                const data = await response.json();
+
+                // guardar token
+                localStorage.setItem('token', data.token);
+
+                // decodificar token
+                const payload = parseJwt(data.token);
+
+                // roles vienen en claim estándar
+                let roles = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+                // normalizar a array
+                if (!Array.isArray(roles)) {
+                    roles = roles ? [roles] : [];
+                }
+
+                // flags
+                const isAdmin = roles.includes("Administrador");
+                const isFuncionario = roles.includes("Funcionario");
+                const isUser = roles.includes("UsuarioGeneral");
+
+                // guardar mail 
+                localStorage.setItem('mail', payload["email"] || payload["sub"] || "");
+
+                if (isAdmin && isUser) {
+                    window.location.href = "usuario.html";
+                }
+                else if (isFuncionario && isUser) {
+                    window.location.href = "usuario.html";
+                }
+                else if (isAdmin) {
+                    window.location.href = "administrador.html";
+                }
+                else if (isFuncionario) {
+                    window.location.href = "funcionario.html";
+                }
+                else {
+                    window.location.href = "usuario.html";
+                }
+
+            } catch (error) {
+                console.error("ERROR REAL:", error);
+                mensajeError.textContent = 'Error de conexión con el servidor';
+                mensajeError.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

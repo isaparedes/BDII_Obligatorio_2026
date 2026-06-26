@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticket - Panel Usuario</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+    <nav class="barraNavegacion" id="barraNavegacion">
+        <div class="logoSistema">UCU Ticket</div>
+            <div class="datosSesion">
+                <span id="textoUsuarioLogueado"></span>
+
+                <select id="selectorDashboard" style="margin-left:15px; display:none;">
+                </select>
+
+                <button onclick="window.location.href='index.html'" class="btnCerrarSesion">
+                    Salir
+                </button>
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal">
+        <div class="pestañasInternas">
+            <button onclick="cambiarSubVista('bloqueMisEntradas')" class="btnPestaña activa" id="btnSubMisEntradas">Mis Entradas</button>
+            <button onclick="cambiarSubVista('bloqueMisCompras')" class="btnPestaña" id="btnSubMisCompras">Mis compras</button>
+            <button onclick="cambiarSubVista('bloqueComprar')" class="btnPestaña" id="btnSubComprar">Adquirir entradas</button>
+            <button onclick="cambiarSubVista('bloqueTransferir')" class="btnPestaña" id="btnSubTransferir">Transferir entrada</button>
+            <button onclick="cambiarSubVista('bloqueHistorialTransferencias')" class="btnPestaña" id="btnSubHistorialTransferencias">Historial de transferencias </button>
+        </div>
+
+        <div id="bloqueMisEntradas" class="subVista activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Mis entradas</h3>
+                <div id="misEntradasContainer">
+                    <!-- Entradas del usuario se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueMisCompras" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Mis compras</h3>
+
+                <div id="misComprasContainer">
+                    <!-- Las compras se cargan aquí -->
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueComprar" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Eventos disponibles</h3>
+                <div class="listaEventosFuturos" id="listaEventosFuturos">
+                    <!-- Eventos se cargan aquí -->
+                </div>
+
+                <div id="formularioAdquisicion" style="display:none; margin-top: 15px; border-top: 2px dashed var(--bordeSuave); padding-top: 15px;">
+                    <h4 id="eventoSeleccionadoCompra" style="color: var(--colorBordeaux); margin-bottom: 10px;"></h4>
+                    <div id="sectoresDisponibles">
+                        <!-- Sectores del estadio -->
+                    </div>
+
+                    <h4 style="margin-top:12px;">Carrito</h4>
+                    <div id="resumenCarrito">
+                        <p>No hay items seleccionados.</p>
+                    </div>
+
+                    <div id="mensajeCompra" style="margin-top:8px; color:var(--colorError);"></div>
+
+                    <div style="margin-top:10px; display:flex; gap:8px;">
+                        <button id="btnCrearCompra" class="btnAccion btnBordeaux" style="display:none;">Crear compra</button>
+                        <button id="btnPagarCompra" class="btnAccion btnVerde" style="display:none;">Pagar compra</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueTransferir" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Transferir entrada</h3>
+                <p class="subtitulo">Seleccioná una de tus entradas y enviála a otro usuario.</p>
+
+                <div id="listaEntradasTransferibles" style="margin-bottom:12px;">Cargando...</div>
+
+                <div id="bloqueFormularioTransferencia" style="display:none; border-top:1px dashed var(--bordeSuave); padding-top:10px;">
+                    <h4 style="margin:6px 0;">Entrada a transferir</h4>
+                    <div id="entradaSeleccionadaTexto" style="margin-bottom:8px; font-size:0.95rem;"></div>
+
+                    <div class="grupoCampo">
+                        <label for="correoDestino">Correo del destinatario:</label>
+                        <input type="email" id="correoDestino" required placeholder="ejemplo@ucu.edu.uy">
+                    </div>
+
+                    <div id="mensajeTransferencia" style="margin-top:8px;color:var(--colorError);"></div>
+
+                    <div style="margin-top:10px; display:flex; gap:8px;">
+                        <button id="btnEnviarTransferencia" class="btnAccion btnBordeaux">Confirmar envío de transferencia</button>
+                        <button class="btnAccion" onclick="(function(){document.getElementById('bloqueFormularioTransferencia').style.display='none';})();">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueHistorialTransferencias" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Historial de transferencias</h3>
+
+                <h4 style="margin: 15px 0 5px 0; font-size: 0.95rem; color: var(--colorVerdeOliva)">Recibidas (Por Aceptar/Rechazar)</h4>
+                <div id="recibidasTransferencias" style="margin-bottom: 12px;">Cargando recibidas...</div>
+
+                <h4 style="margin: 15px 0 5px 0; font-size: 0.95rem; color: var(--colorTextoPrincipal)">Enviadas y Estados</h4>
+                <div id="enviadasTransferencias">Cargando enviadas...</div>
+            </div>
+        </div>
+    </main>
+        <script src="js/api.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/dashboardSelector.js"></script>
+        <script src="js/usuarioGeneral/usuarioEntradas.js"></script>
+        <script src="js/usuarioGeneral/usuarioCompras.js"></script>
+        <script src="js/usuarioGeneral/usuarioTransferencias.js"></script>
+        <script src="js/usuarioGeneral/usuarioCompraEventos.js"></script>
+
+        <script src="js/usuarioGeneral/usuarioGeneral.js"></script>
+    </script>
+</body>
+</html>

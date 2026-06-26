@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticket - Administración</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="barraNavegacion">
+        <div class="logoSistema">UCU Ticket - Admin</div>
+        <div class="datosSesion">
+
+            <span id="textoUsuarioLogueado"></span>
+
+            <select id="selectorDashboard" style="display:none;"></select>
+
+            <button onclick="window.location.href='index.html'" class="btnCerrarSesion">
+                Salir
+            </button>
+
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal" style="max-width: 500px;">
+        
+        <div class="pestañasInternas">
+            <button onclick="cambiarAdminVista('bloqueEstadisticas')" class="btnPestaña activa" id="btnAdminEstadisticas">Estadísticas</button>
+            <button onclick="cambiarAdminVista('bloqueCrear')" class="btnPestaña" id="btnAdminCrear">Crear Evento</button>
+            <button onclick="cambiarAdminVista('bloqueLogistica')" class="btnPestaña" id="btnAdminLogistica">Logística/Eventos</button>
+        </div>
+
+        <div id="bloqueEstadisticas" class="subVista activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Estadísticas y rendimiento</h3>
+                <p class="subtitulo">Métricas del mercado procesadas en tiempo real.</p>
+                
+                <div style="background: #f7fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.9rem;">
+                    <p><strong>Top 10: Eventos con mayor venta de entradas</strong></p>
+                    <div id="estadisticasEventosMasVendidos" style="margin-top: 10px; color: var(--colorGrisTexto);"></div>
+                </div>
+
+                <div style="background: #f7fafc; padding: 12px; border-radius: 6px; font-size: 0.9rem;">
+                    <p><strong>Top 5: Mayores compradores</strong></p>
+                    <div id="estadisticasMayoresCompradores" style="margin-top: 10px; color: var(--colorGrisTexto);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="bloqueCrear" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Crear nuevo evento</h3>
+                <p class="subtitulo">Asignación de infraestructura sin superposición horaria.</p>
+
+                <form id="formCrearEvento" onsubmit="event.preventDefault(); crearEvento();">
+                    <div class="grupoCampo">
+                        <label>Estadio:</label>
+                        <select id="selectEstadio" required>
+                            <option value="">Cargando estadios...</option>
+                        </select>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Equipo local:</label>
+                        <select id="selectEquipoLocal" required>
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Equipo visitante:</label>
+                        <select id="selectEquipoVisitante" required>
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Fecha del evento:</label>
+                        <input id="inputFechaEvento" type="date" required>
+                    </div>
+                    <div class="grupoCampo">
+                        <label>Hora del evento:</label>
+                        <input id="inputHoraEvento" type="time" required>
+                    </div>
+                    <div id="mensajeCrearEvento" style="color: var(--colorBordeaux); margin-bottom: 8px;"></div>
+                    <button type="submit" class="btnAccion btnBordeaux">Dar de alta el evento</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="bloqueLogistica" class="subVista">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Logística de eventos existentes</h3>
+                <p class="subtitulo">Control de accesos y personal parametrizado.</p>
+
+                <div class="grupoCampo">
+                    <label for="selectEventoAdmin">Seleccionar evento:</label>
+                    <select id="selectEventoAdmin" onchange="cambiarEventoLogistica(this.value)">
+                        <option value="">Cargando eventos futuros...</option>
+                    </select>
+                </div>
+
+                <div style="background: #edf2f7; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <h4 style="font-size: 0.9rem; color: var(--colorBordeaux); margin-bottom: 5px;">Sectores habilitados</h4>
+                    <div id="contenedorSectores" style="font-size: 0.8rem; margin-bottom: 10px;">Seleccione un evento para ver sectores habilitados.</div>
+
+                    <form id="formHabilitarSector" onsubmit="event.preventDefault(); habilitarSector();" style="display:flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex:1; min-width: 180px;">
+                            <label>Sector a habilitar:</label>
+                            <select id="selectNuevoSector" required>
+                                <option value="">Seleccione un sector</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btnAccion btnVerde" style="padding: 8px 12px;">+ Habilitar sector</button>
+                    </form>
+                    <div id="mensajeHabilitarSector" style="color: var(--colorBordeaux); margin-top: 8px;"></div>
+                </div>
+
+                <div style="background: #edf2f7; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                    <h4 style="font-size: 0.9rem; color: var(--colorVerdeOliva); margin-bottom: 5px;">Funcionarios asignados</h4>
+                    <div id="contenedorFuncionarios" style="font-size: 0.8rem; margin-bottom: 10px;">Seleccione un evento para ver funcionarios asignados.</div>
+
+                    <form id="formAsignarFuncionario" onsubmit="event.preventDefault(); asignarFuncionario();" style="display:flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex:1; min-width: 180px;">
+                            <label>Sector habilitado:</label>
+                            <select id="selectSectorAsignar" required>
+                                <option value="">Seleccione un evento primero</option>
+                            </select>
+                        </div>
+                        <div style="flex:1; min-width: 180px;">
+                            <label>Email del funcionario:</label>
+                            <input id="inputMailFuncionario" type="email" placeholder="funcionario@fifa.com" required>
+                        </div>
+                        <button type="submit" class="btnAccion btnBordeaux" style="padding: 8px 12px;">Asignar funcionario</button>
+                    </form>
+                    <div id="mensajeAsignarFuncionario" style="color: var(--colorBordeaux); margin-top: 8px;"></div>
+                </div>
+
+                <div style="background: #edf2f7; padding: 12px; border-radius: 6px;">
+                    <h4 style="font-size: 0.9rem; color: var(--colorBordeaux); margin-bottom: 5px;">Dispositivos habilitados</h4>
+                    <div id="contenedorDispositivos" style="font-size: 0.8rem; margin-bottom: 10px;">Seleccione un evento para ver dispositivos habilitados.</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+        <script src="js/api.js"></script>
+        <script src="js/auth.js"></script>
+        <script src="js/dashboardSelector.js"></script>
+        <script src="js/admin/adminEstadisticas.js"></script>
+        <script src="js/admin/adminEventos.js"></script>
+        <script src="js/admin/adminLogistica.js"></script>
+        <script src="js/admin/admin.js"></script>
+        <script>
+    </script>
+</body>
+</html>

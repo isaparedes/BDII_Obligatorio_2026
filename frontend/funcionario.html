@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCU Ticket - Operativo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="barraNavegacion">
+        <div class="logoSistema">UCU Ticket</div>
+
+        <div class="datosSesion">
+
+            <span>Validación de Accesos</span>
+
+            <select id="selectorDashboard" style="display:none;"></select>
+
+            <button onclick="window.location.href='index.html'" class="btnCerrarSesion">
+                Salir
+            </button>
+
+        </div>
+    </nav>
+
+    <main class="contenedorPrincipal">
+        <section id="pantallaFuncionarioValidacion" class="seccionPantalla activa">
+            <div class="tarjetaContenedor">
+                <h3 class="tituloTarjeta">Módulo de Control</h3>
+                <p class="subtitulo">Perfil Operativo - Dispositivos</p>
+                
+                <div class="infoPerfil">
+                    <p><strong>Funcionario Legajo N°:</strong> <span id="legajoFuncionario">LEG-9924</span></p>
+                </div>
+
+                <div class="listaDispositivos" id="listaDispositivos" style="margin-bottom: 16px;"></div>
+
+                <div class="bloqueEscaneo">
+                    <p class="instruccion">Ingresa el token dinámico:</p>
+                    <input type="text" id="tokenEscaneado" placeholder="Ej: TOKEN-A1B2" class="inputEscaneo">
+                    <button id="btnValidarEntrada" onclick="validarEntrada()" class="btnAccion btnVerde">Validar entrada</button>
+                    <div id="mensajeValidacion" style="margin-top: 10px; font-size:0.95rem;"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboardSelector.js"></script>
+    <script src="js/funcionario/funcionarioApi.js"></script>
+    <script src="js/funcionario/funcionarioUI.js"></script>
+    <script src="js/funcionario/funcionarioValidacion.js"></script>
+    <script src="js/funcionario/funcionario.js"></script>
+</body>
+</html>
