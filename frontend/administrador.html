@@ -11,7 +11,15 @@
     <nav class="barraNavegacion">
         <div class="logoSistema">UCU Ticket - Admin</div>
         <div class="datosSesion">
-            <button onclick="window.location.href='index.html'" class="btnCerrarSesion">Salir</button>
+
+            <span id="textoUsuarioLogueado"></span>
+
+            <select id="selectorDashboard" style="display:none;"></select>
+
+            <button onclick="window.location.href='index.html'" class="btnCerrarSesion">
+                Salir
+            </button>
+
         </div>
     </nav>
 
@@ -96,8 +104,10 @@
 
                     <form id="formHabilitarSector" onsubmit="event.preventDefault(); habilitarSector();" style="display:flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
                         <div style="flex:1; min-width: 180px;">
-                            <label>Nombre del sector:</label>
-                            <input id="inputNuevoSector" type="text" placeholder="Ej: Tribuna Norte" required>
+                            <label>Sector a habilitar:</label>
+                            <select id="selectNuevoSector" required>
+                                <option value="">Seleccione un sector</option>
+                            </select>
                         </div>
                         <button type="submit" class="btnAccion btnVerde" style="padding: 8px 12px;">+ Habilitar sector</button>
                     </form>
@@ -117,7 +127,7 @@
                         </div>
                         <div style="flex:1; min-width: 180px;">
                             <label>Email del funcionario:</label>
-                            <input id="inputMailFuncionario" type="email" placeholder="funcionario@ucu.edu.uy" required>
+                            <input id="inputMailFuncionario" type="email" placeholder="funcionario@fifa.com" required>
                         </div>
                         <button type="submit" class="btnAccion btnBordeaux" style="padding: 8px 12px;">Asignar funcionario</button>
                     </form>
@@ -143,6 +153,59 @@
                 headers.Authorization = `Bearer ${token}`;
             }
             return headers;
+        }
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(atob(base64));
+        }
+
+        function configurarSelectorDashboard(paginaActual) {
+
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const payload = parseJwt(token);
+
+            let roles =
+                payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+                || payload.role;
+
+            if (!Array.isArray(roles))
+                roles = roles ? [roles] : [];
+
+            const selector = document.getElementById("selectorDashboard");
+            selector.innerHTML = "";
+
+            if (roles.includes("UsuarioGeneral")) {
+                selector.innerHTML += `
+                    <option value="usuario.html">
+                        Usuario General
+                    </option>`;
+            }
+
+            if (roles.includes("Administrador")) {
+                selector.innerHTML += `
+                    <option value="administrador.html">
+                        Administrador
+                    </option>`;
+            }
+
+            if (roles.includes("Funcionario")) {
+                selector.innerHTML += `
+                    <option value="funcionario.html">
+                        Funcionario
+                    </option>`;
+            }
+
+            selector.style.display = selector.options.length > 1 ? "inline-block" : "none";
+
+            selector.value = paginaActual;
+
+            selector.onchange = function () {
+                window.location.href = this.value;
+            };
         }
 
         function ensureAdminLoggedIn() {
@@ -208,7 +271,7 @@
                     const compradores = await cRes.json();
                     compradoresContainer.innerHTML = compradores.length > 0 ? `
                         <table class="tablaEstadisticas">
-                            <thead><tr><th>Cliente</th><th>Entradas</th><th>Compras</th><th>Gasto</th></tr></thead>
+                            <thead><tr><th>Usuario general</th><th>Entradas</th><th>Compras</th><th>Gasto</th></tr></thead>
                             <tbody>${compradores.map(c => `<tr><td>${c.mailComprador || c.mail}</td><td>${c.totalEntradas}</td><td>${c.totalCompras}</td><td>$${c.gastoTotal ?? c.totalGastado ?? 0}</td></tr>`).join('')}</tbody>
                         </table>` : '<p>No hay compradores registrados.</p>';
                 } else {
@@ -296,8 +359,8 @@
                 }
                 select.innerHTML = '<option value="">Seleccione un evento</option>';
                 eventos.forEach(ev => {
-                    const date = ev.fechaEvento || (ev.fecha ? ev.fecha.split('T')[0] : '');
-                    const hora = ev.horaEvento || (ev.fecha ? new Date(ev.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+                    const date = ev.fechaEvento.split('T')[0];
+                    const hora = ev.horaEvento;
                     const option = document.createElement('option');
                     option.value = ev.idEvento ?? ev.id;
                     option.innerText = `${ev.equipoLocal} vs ${ev.equipoVisitante} — ${ev.nombreEstadio} (${date} ${hora})`;
@@ -348,12 +411,92 @@
 
                 if (sectRes.ok) {
                     const sectores = await sectRes.json();
+
+                    // Mostrar los sectores habilitados en el contenedor visual
                     if (sectores && sectores.length > 0) {
                         sectoresContainer.innerHTML = sectores.map(s => `<span style="background:#fff; padding:3px 8px; border-radius:4px; border:1px solid #e2e8f0; display:inline-block; margin:2px;">${s.nombreSector || s.nombre}</span>`).join('');
-                        sectorSelect.innerHTML = '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('');
                     } else {
                         sectoresContainer.innerHTML = '<p>No hay sectores habilitados para este evento.</p>';
-                        sectorSelect.innerHTML = '<option value="">No hay sectores habilitados</option>';
+                    }
+
+                    // Cargar todos los sectores del estadio (para mostrar los no habilitados también)
+                    try {
+                        // Obtener detalles del evento para conocer el estadio
+                        const eventoRes = await fetch(`${API_URL}/evento/${idEvento}`, { headers: getAuthHeaders() });
+                        let idEstadio = null;
+                        if (eventoRes.ok) {
+                            const eventoDetalle = await eventoRes.json();
+                            idEstadio = eventoDetalle.idEstadio ?? eventoDetalle.IdEstadio ?? eventoDetalle.id_estadio ?? eventoDetalle.idEstadio;
+                            console.log("EVENTO DETALLE:", eventoDetalle);
+                            console.log("ID ESTADIO:", idEstadio);
+                        }
+
+                        if (idEstadio) {
+                            const todosRes = await fetch(`${API_URL}/sector/${idEstadio}`, { headers: getAuthHeaders() });
+                            if (todosRes.ok) {
+                                const todosSectores = await todosRes.json();
+                                console.log(todosSectores);
+
+                                // Normalizar nombres (lowercase trimmed) para comparar correctamente
+                                const habilitadosNombres = (sectores || []).map(s => ((s.nombreSector || s.nombre || s.NombreSector || s.nombre_sector || '') + '').toLowerCase().trim());
+                               // TODOS los sectores del estadio
+                                const todos = (todosSectores || []).map(s => ({
+                                    nombre: (s.nombreSector || s.nombre || s.NombreSector || s.nombre_sector || '').trim()
+                                }));
+
+                                // sectores habilitados
+                                const habilitadosSet = new Set(
+                                    (sectores || []).map(s =>
+                                        (s.nombreSector || s.nombre || '').trim()
+                                    )
+                                );
+
+                                // separar
+                                const habilitados = todos.filter(s => habilitadosSet.has(s.nombre));
+                                const noHabilitados = todos.filter(s => !habilitadosSet.has(s.nombre));
+
+                                const nuevoSectorSelect = document.getElementById('selectNuevoSector');
+
+                                let optionsNoHab = '<option value="">Seleccione un sector</option>';
+
+                                if (noHabilitados.length > 0) {
+                                    optionsNoHab += noHabilitados.map(s =>
+                                        `<option value="${s.nombre}">${s.nombre}</option>`
+                                    ).join('');
+                                } else {
+                                    optionsNoHab += '<option disabled>No hay sectores disponibles</option>';
+                                }
+
+                                nuevoSectorSelect.innerHTML = optionsNoHab;
+
+                                let optionsHab = '<option value="">Seleccione un sector habilitado</option>';
+
+                                if (habilitados.length > 0) {
+                                    optionsHab += habilitados.map(s =>
+                                        `<option value="${s.nombre}">${s.nombre}</option>`
+                                    ).join('');
+                                } else {
+                                    optionsHab += '<option disabled>No hay sectores habilitados</option>';
+                                }
+
+                                sectorSelect.innerHTML = optionsHab;
+                            } else {
+                                // Fallback: solo habilitados si no se pueden obtener todos
+                                sectorSelect.innerHTML = (sectores && sectores.length > 0)
+                                    ? '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('')
+                                    : '<option value="">No hay sectores habilitados</option>';
+                            }
+                        } else {
+                            // No se obtuvo idEstadio: mostrar solo habilitados
+                            sectorSelect.innerHTML = (sectores && sectores.length > 0)
+                                ? '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('')
+                                : '<option value="">No hay sectores habilitados</option>';
+                        }
+                    } catch (err) {
+                        // En caso de error al obtener sectores del estadio, mostrar solo habilitados
+                        sectorSelect.innerHTML = (sectores && sectores.length > 0)
+                            ? '<option value="">Seleccione un sector habilitado</option>' + sectores.map(s => `<option value="${s.nombreSector || s.nombre}">${s.nombreSector || s.nombre}</option>`).join('')
+                            : '<option value="">No hay sectores habilitados</option>';
                     }
                 } else {
                     sectoresContainer.innerHTML = '<p>No hay sectores habilitados para este evento.</p>';
@@ -427,7 +570,7 @@
                     msgBox.innerText = 'Evento creado correctamente';
                     document.getElementById('formCrearEvento').reset();
                     await loadEventosAdmin();
-                } else if (res.status === 403) {
+                } else if (res.status === 500) {
                     msgBox.innerText = 'No puede crear el evento porque el estadio está fuera de su jurisdicción.';
                 } else if (res.status === 400) {
                     msgBox.innerText = text || 'Error creando evento';
@@ -441,7 +584,7 @@
 
         async function habilitarSector() {
             const idEvento = parseInt(document.getElementById('selectEventoAdmin').value || '0', 10);
-            const nombreSector = document.getElementById('inputNuevoSector').value.trim();
+            const nombreSector = document.getElementById('selectNuevoSector').value;
             const msgBox = document.getElementById('mensajeHabilitarSector');
             msgBox.style.color = 'var(--colorBordeaux)';
             msgBox.innerText = '';
@@ -465,7 +608,7 @@
                 if (res.ok) {
                     msgBox.style.color = 'green';
                     msgBox.innerText = 'Sector habilitado correctamente';
-                    document.getElementById('inputNuevoSector').value = '';
+                    document.getElementById('selectNuevoSector').value = '';;
                     await loadLogisticaForEvent(idEvento);
                 } else if (res.status === 403) {
                     msgBox.innerText = 'No puede habilitar sector en este evento por jurisdicción.';
@@ -526,7 +669,16 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             ensureAdminLoggedIn();
-            await Promise.all([loadEstadisticas(), loadEquipos(), loadEstadios(), loadEventosAdmin()]);
+
+            configurarSelectorDashboard('administrador.html');
+
+            await Promise.all([
+                loadEstadisticas(),
+                loadEquipos(),
+                loadEstadios(),
+                loadEventosAdmin()
+            ]);
+
         });
     </script>
 </body>

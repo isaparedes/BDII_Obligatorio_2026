@@ -111,12 +111,11 @@
                 // guardar mail si querés
                 localStorage.setItem('mail', payload["email"] || payload["sub"] || "");
 
-                // 🔀 redirección lógica
                 if (isAdmin && isUser) {
-                    window.location.href = "usuarioAdmin.html";
+                    window.location.href = "usuario.html";
                 }
                 else if (isFuncionario && isUser) {
-                    window.location.href = "usuarioFuncionario.html";
+                    window.location.href = "usuario.html";
                 }
                 else if (isAdmin) {
                     window.location.href = "administrador.html";

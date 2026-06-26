@@ -11,9 +11,15 @@
 
     <nav class="barraNavegacion" id="barraNavegacion">
         <div class="logoSistema">UCU Ticket</div>
-        <div class="datosSesion">
-            <span id="textoUsuarioLogueado">usuario@ucu.edu.uy (Cliente)</span>
-            <button onclick="window.location.href='index.html'" class="btnCerrarSesion">Salir</button>
+            <div class="datosSesion">
+                <span id="textoUsuarioLogueado"></span>
+
+                <select id="selectorDashboard" style="margin-left:15px; display:none;">
+                </select>
+
+                <button onclick="window.location.href='index.html'" class="btnCerrarSesion">
+                    Salir
+                </button>
         </div>
     </nav>
 
@@ -121,6 +127,59 @@
             };
         }
 
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(atob(base64));
+        }
+
+       function configurarSelectorDashboard(paginaActual) {
+
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const payload = parseJwt(token);
+
+            let roles =
+                payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+                || payload.role;
+
+            if (!Array.isArray(roles))
+                roles = roles ? [roles] : [];
+
+            const selector = document.getElementById("selectorDashboard");
+            selector.innerHTML = "";
+
+            if (roles.includes("UsuarioGeneral")) {
+                selector.innerHTML += `
+                    <option value="usuario.html">
+                        Usuario General
+                    </option>`;
+            }
+
+            if (roles.includes("Administrador")) {
+                selector.innerHTML += `
+                    <option value="administrador.html">
+                        Administrador
+                    </option>`;
+            }
+
+            if (roles.includes("Funcionario")) {
+                selector.innerHTML += `
+                    <option value="funcionario.html">
+                        Funcionario
+                    </option>`;
+            }
+
+            selector.style.display = selector.options.length > 1 ? "inline-block" : "none";
+
+            selector.value = paginaActual;
+
+            selector.onchange = function () {
+                window.location.href = this.value;
+            };
+        }
+
         // Navegación entre sub-vistas
         function cambiarSubVista(idBloqueDestino) {
             const bloques = ['bloqueMisEntradas', 'bloqueComprar', 'bloqueTransferir', 'bloqueHistorialTransferencias'];
@@ -135,11 +194,19 @@
 
         // Cargar datos al inicio
         document.addEventListener('DOMContentLoaded', () => {
+
+            configurarSelectorDashboard("usuario.html");
+
             const mail = localStorage.getItem('mail') || '';
-            document.getElementById('textoUsuarioLogueado').innerText = `${mail} (Cliente)`;
+
+            document.getElementById('textoUsuarioLogueado').innerText = `${mail}`;
+
             loadMisEntradas();
+
             loadEventosFuturos();
+
             setupCompraButtons();
+
         });
 
         // --- Mis Entradas: obtiene compras del usuario y genera QR por cada entrada ---
@@ -202,10 +269,35 @@
                         qrBox.style.width = '120px';
                         qrBox.style.height = '120px';
                         qrBox.id = `qr-${entrada.idEntrada || entrada.id_entrada}`;
+
+                        const estadoEntrada = entrada.estadoEntrada || entrada.estado_entrada;
+
+                        if (estadoEntrada === 'Consumida') {
+                            qrBox.innerHTML = `
+                                <div style="
+                                    width:120px;
+                                    height:120px;
+                                    display:flex;
+                                    align-items:center;
+                                    justify-content:center;
+                                    text-align:center;
+                                    border:1px solid #ccc;
+                                    border-radius:6px;
+                                    color:#666;
+                                    font-weight:bold;
+                                    padding:8px;
+                                ">
+                                    Entrada<br>consumida
+                                </div>`;
+                        } else {
+                            displayedEntries.push({
+                                idEntrada: entrada.idEntrada || entrada.id_entrada,
+                                qrBox
+                            });
+                        }
+
                         item.appendChild(qrBox);
                         list.appendChild(item);
-
-                        displayedEntries.push({ idEntrada: entrada.idEntrada || entrada.id_entrada, qrBox });
                     }
 
                     compraDiv.appendChild(list);
@@ -226,13 +318,13 @@
                     try {
                         const res = await fetch(`${API_URL}/token/activo/${entry.idEntrada}`, { headers: getAuthHeaders() });
                         if (!res.ok) {
-                            entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">No token</div>';
+                            entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">Sin token disponible</div>';
                             continue;
                         }
                         const tokenDto = await res.json();
                         const code = tokenDto.codigoQR || tokenDto.CodigoQR || tokenDto.codigoQr || tokenDto.codigo_qr || '';
                         if (!code) {
-                            entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">No token</div>';
+                            entry.qrBox.innerHTML = '<div style="font-size:0.85rem; color:gray;">Sin token disponible</div>';
                             continue;
                         }
                         entry.qrBox.innerHTML = '';

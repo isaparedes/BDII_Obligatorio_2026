@@ -214,3 +214,22 @@ body {
 
 .btnBordeaux { background-color: var(--colorBordeaux); }
 .btnVerde { background-color: var(--colorVerdeOliva); }
+
+#selectorDashboard {
+    margin-left: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+#selectorDashboard:hover {
+    border-color: var(--colorBordeaux);
+}
+
+#selectorDashboard:focus {
+    outline: none;
+    border-color: var(--colorBordeaux);
+}
