@@ -15,7 +15,7 @@
             <button onclick="window.location.href='index.html'" class="btnCerrarSesion">Salir</button>
         </div>
     </nav>
-    
+
     <main class="contenedorPrincipal">
         <section id="pantallaFuncionarioValidacion" class="seccionPantalla activa">
             <div class="tarjetaContenedor">
@@ -26,22 +26,260 @@
                     <p><strong>Funcionario Legajo N°:</strong> <span id="legajoFuncionario">LEG-9924</span></p>
                 </div>
 
+                <div class="listaDispositivos" id="listaDispositivos" style="margin-bottom: 16px;"></div>
+
                 <div class="bloqueEscaneo">
                     <p class="instruccion">Ingresa el token dinámico o simula el escaneo de cámara:</p>
                     <input type="text" id="tokenEscaneado" placeholder="Ej: TOKEN-A1B2" class="inputEscaneo">
-                    <button onclick="simularValidacion()" class="btnAccion btnVerde">Validar entrada</button>
+                    <button id="btnValidarEntrada" onclick="validarEntrada()" class="btnAccion btnVerde">Validar entrada</button>
+                    <div id="mensajeValidacion" style="margin-top: 10px; font-size:0.95rem;"></div>
                 </div>
             </div>
         </section>
     </main>
 
     <script>
-        function simularValidacion() {
-            const token = document.getElementById('tokenEscaneado').value;
-            if(!token) return alert('Ingresa un token válido');
-            alert(`Token [${token}] verificado. Estado: CONSUMIDO en BDD.`);
-            document.getElementById('tokenEscaneado').value = '';
+        const API_URL = 'http://localhost:5271/api';
+        let selectedDeviceId = null;
+        let funcionarioMail = null;
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                    atob(base64)
+                        .split('')
+                        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                        .join('')
+                );
+                return JSON.parse(jsonPayload);
+            } catch {
+                return null;
+            }
         }
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('token');
+            return {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            };
+        }
+
+        function showValidationMessage(message, type) {
+            const msg = document.getElementById('mensajeValidacion');
+            msg.textContent = message;
+            msg.style.color = type === 'success' ? 'green' : 'red';
+        }
+
+        function showError(message) {
+            showValidationMessage(message, 'error');
+        }
+
+        function showSuccess(message) {
+            showValidationMessage(message, 'success');
+        }
+
+        function redirectToLogin() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        async function fetchFuncionario(mail) {
+            try {
+                const response = await fetch(`${API_URL}/usuario/${encodeURIComponent(mail)}/funcionario`, {
+                    headers: getAuthHeaders()
+                });
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener datos del funcionario');
+                }
+                return await response.json();
+            } catch {
+                return null;
+            }
+        }
+
+        async function fetchDispositivos(mail) {
+            try {
+                const response = await fetch(`${API_URL}/dispositivo/${encodeURIComponent(mail)}`, {
+                    headers: getAuthHeaders()
+                });
+                if (!response.ok) {
+                    throw new Error('No se pudo obtener dispositivos');
+                }
+                return await response.json();
+            } catch {
+                return [];
+            }
+        }
+
+        function renderDispositivos(dispositivos) {
+            const container = document.getElementById('listaDispositivos');
+            container.innerHTML = '';
+
+            if (!Array.isArray(dispositivos) || dispositivos.length === 0) {
+                container.innerHTML = '<p style="color: red;">No hay dispositivos asignados.</p>';
+                return;
+            }
+
+            dispositivos.forEach((dispositivo, index) => {
+                const id = dispositivo.IdDispositivo ?? dispositivo.idDispositivo ?? dispositivo.id ?? dispositivo.id_dispositivo;
+                const card = document.createElement('div');
+                card.className = 'dispositivoCard';
+                card.style.cursor = 'pointer';
+                card.style.border = '1px solid #ccc';
+                card.style.borderRadius = '8px';
+                card.style.padding = '12px';
+                card.style.marginBottom = '10px';
+                card.style.background = index === 0 ? '#f0f8ff' : '#ffffff';
+                card.dataset.deviceId = id;
+                card.innerHTML = `<p><strong>Device ID:</strong> ${id}</p>`;
+                card.addEventListener('click', () => selectDeviceCard(card, id));
+                container.appendChild(card);
+
+                if (index === 0) {
+                    selectedDeviceId = id;
+                }
+            });
+
+            updateSelectedDeviceUI();
+        }
+
+        function selectDeviceCard(card, deviceId) {
+            selectedDeviceId = deviceId;
+            document.querySelectorAll('#listaDispositivos .dispositivoCard').forEach(c => {
+                c.style.background = '#ffffff';
+                c.style.borderColor = '#ccc';
+            });
+            card.style.background = '#f0f8ff';
+            card.style.borderColor = '#007b33';
+        }
+
+        function updateSelectedDeviceUI() {
+            const cards = document.querySelectorAll('#listaDispositivos .dispositivoCard');
+            if (cards.length === 0) return;
+            cards.forEach(card => {
+                const id = card.dataset.deviceId;
+                if (id && id.toString() === selectedDeviceId?.toString()) {
+                    card.style.background = '#f0f8ff';
+                    card.style.borderColor = '#007b33';
+                } else {
+                    card.style.background = '#ffffff';
+                    card.style.borderColor = '#ccc';
+                }
+            });
+        }
+
+        function getFuncionarioEmailFromToken() {
+            const token = localStorage.getItem('token');
+            if (!token) return null;
+
+            const payload = parseJwt(token);
+            if (!payload) return null;
+
+            return (
+                payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ||
+                payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/emailaddress'] ||
+                payload['email'] ||
+                payload['sub'] ||
+                null
+            );
+        }
+
+        function getRolesFromToken() {
+            const token = localStorage.getItem('token');
+            if (!token) return [];
+
+            const payload = parseJwt(token);
+            if (!payload) return [];
+
+            const claim =
+                payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+                payload['role'] ||
+                payload['roles'];
+
+            if (!claim) return [];
+
+            return Array.isArray(claim) ? claim : [claim];
+        }
+        
+
+        async function initializePage() {
+            console.log("TOKEN:", localStorage.getItem('token'));
+            console.log("PAYLOAD:", parseJwt(localStorage.getItem('token')));
+            console.log("ROLES:", getRolesFromToken());
+            const roles = getRolesFromToken();
+            if (!roles.includes('Funcionario')) {
+                redirectToLogin();
+                return;
+            }
+
+            funcionarioMail = getFuncionarioEmailFromToken();
+            if (!funcionarioMail) {
+                redirectToLogin();
+                return;
+            }
+
+            const funcionario = await fetchFuncionario(funcionarioMail);
+            console.log("FUNCIONARIO:", funcionario);
+            if (funcionario && funcionario.numeroLegajo !== undefined) {
+                document.getElementById('legajoFuncionario').textContent = funcionario.numeroLegajo ?? 'N/D';
+            } else {
+                document.getElementById('legajoFuncionario').textContent = '';
+            }
+
+            const dispositivos = await fetchDispositivos(funcionarioMail);
+            
+            renderDispositivos(dispositivos);
+        }
+
+        async function validarEntrada() {
+            const input = document.getElementById('tokenEscaneado');
+            const token = input.value.trim();
+            const button = document.getElementById('btnValidarEntrada');
+
+            if (!token) {
+                showError('Ingrese un token válido antes de continuar.');
+                return;
+            }
+            if (!selectedDeviceId) {
+                showError('Seleccione un dispositivo antes de validar.');
+                return;
+            }
+
+            button.disabled = true;
+            showValidationMessage('Validando token...', '');
+
+            try {
+                console.log("TOKEN ENVIADO:", localStorage.getItem("token"));
+                const response = await fetch(`${API_URL}/validacion/escanear`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ CodigoQr: token, IdDispositivo: Number(selectedDeviceId) })
+                });
+
+                const text = await response.text();
+                console.log("STATUS:", response.status);
+                console.log("RESPUESTA:", text);
+                if (response.ok) {
+                    showSuccess('Entrada validada correctamente.');
+                    input.value = '';
+                    setTimeout(() => {
+                        button.disabled = false;
+                        showValidationMessage('', '');
+                    }, 1500);
+                } else {
+                    showError(text || 'Error en la validación del token.');
+                    button.disabled = false;
+                }
+            } catch (error) {
+                showError('No se pudo conectar con el servidor.');
+                button.disabled = false;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initializePage);
     </script>
 </body>
 </html>

@@ -47,4 +47,14 @@ public class DispositivoRepository
             "SELECT * FROM dispositivo"
         );
     }
+
+     // Obtener todos los dispositivos registrados de un funcionario específico
+    public async Task<IEnumerable<Dispositivo>> ObtenerDispositivosFuncionario(string mail)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryAsync<Dispositivo>(
+            "SELECT * FROM dispositivo WHERE mail_funcionario = @Mail",
+            new {Mail = mail}
+        );
+    }
 }

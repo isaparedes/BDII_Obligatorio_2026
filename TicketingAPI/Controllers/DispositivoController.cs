@@ -29,8 +29,16 @@ public class DispositivoController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ObtenerDispositivos()
     {
-        var equipos = await _repo.ObtenerTodos();
-        return Ok(equipos);
+        var dispositivos = await _repo.ObtenerTodos();
+        return Ok(dispositivos);
+    }
+
+    [HttpGet("{mail}")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerDispositivosPorFuncionario(string mail)
+    {
+        var dispositivos = await _repo.ObtenerDispositivosFuncionario(mail);
+        return Ok(dispositivos);
     }
 
 }

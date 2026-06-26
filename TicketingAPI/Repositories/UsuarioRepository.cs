@@ -124,6 +124,16 @@ public class UsuarioRepository
         );
     }
 
+    // Obtener un funcionario por su mail
+    public async Task<Funcionario?> ObtenerFuncionario(string mail)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<Funcionario>(
+            "SELECT * FROM funcionario WHERE mail = @Mail",
+            new { Mail = mail }
+        );
+    }
+
     // Obtener el rol de un usuario por su mail
     public async Task<List<string>> ObtenerRoles(string mail)
     {

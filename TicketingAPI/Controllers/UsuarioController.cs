@@ -110,6 +110,17 @@ public class UsuarioController : ControllerBase
         return Ok(usuario);
     }
 
+    [HttpGet("{mail}/funcionario")]
+    [Authorize]
+    public async Task<IActionResult> ObtenerFuncionario(string mail)
+    {
+        var funcionario = await _repo.ObtenerFuncionario(mail);
+        if (funcionario == null)
+            return NotFound("Funcionario no encontrado");
+
+        return Ok(funcionario);
+    }
+
     [HttpPut("verificar")]
     [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> VerificarUsuario([FromBody] VerificarUsuarioGralDTO dto)
