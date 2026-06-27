@@ -49,6 +49,42 @@ Tener instalado previamente **.NET SDK 10**.
 
 Una vez iniciado correctamente, el backend quedará en ejecución.
 
+## Solución de problemas
+
+### Error al ejecutar `dotnet restore` o `dotnet run`
+
+Si aparece un error similar a:
+
+```
+NU1100: No se puede resolver 'Dapper'
+NU1100: No se puede resolver 'MySqlConnector'
+```
+
+verifique que el origen de paquetes de NuGet esté configurado:
+
+```bash
+dotnet nuget list source
+```
+
+Si el comando muestra:
+
+```
+No se encontró ningún origen.
+```
+
+agregue el repositorio oficial de NuGet ejecutando:
+
+```bash
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+```
+
+Luego ejecute nuevamente:
+
+```bash
+dotnet restore
+dotnet run
+```
+
 ---
 
 ## Ejecución del frontend
